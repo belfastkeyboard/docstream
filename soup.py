@@ -1,8 +1,7 @@
 from bs4 import BeautifulSoup
 from bs4 import ResultSet, Tag
-from bs4.element import PageElement
 from send import DocNode
-from dataclasses import dataclass
+from helper import HTMLElement
 
 
 def title(soup: BeautifulSoup) -> str:
@@ -34,18 +33,13 @@ def metadata(soup: BeautifulSoup) -> dict[str, str]:
 
 
 def nodes(soup: BeautifulSoup) -> list[DocNode]:
-    @dataclass
-    class Element:
-        data: PageElement
-        styles: set[str]
-
-    def flatten(element: Element) -> None:
+    def flatten(element: HTMLElement) -> None:
         style: str = element.data.name if isinstance(element.data, Tag) else 'p'
         element.styles.add(style)
 
         if isinstance(element.data, Tag) and len(element.data.contents) > 1:
             for content in element.data.contents:
-                content = Element(content, element.styles.copy())
+                content = HTMLElement(content, element.styles.copy())
                 flatten(content)
         else:
             node = DocNode.from_html(element.data, element.styles)
@@ -56,7 +50,7 @@ def nodes(soup: BeautifulSoup) -> list[DocNode]:
     body: Tag = soup.find('body')
 
     for e in body:
-        e = Element(e, set())
+        e = HTMLElement(e, set())
         flatten(e)
 
     return result

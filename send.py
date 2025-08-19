@@ -22,6 +22,8 @@ class DocNode:
     def from_html(cls, element: PageElement, styles: set[str]):
         text: str = element.text if isinstance(element, Tag) else str(element)
 
+        print(styles)
+
         return cls(styles, text)
 
 
