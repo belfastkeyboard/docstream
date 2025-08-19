@@ -1,13 +1,13 @@
-from __future__ import print_function
 import os
 import pickle
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from bs4.element import PageElement
 from bs4 import Tag
 from dataclasses import dataclass
 from typing import Any
+from helper import HTMLElement
+from transform import marxists_style
 
 
 class DocNode:
@@ -18,13 +18,51 @@ class DocNode:
     def __str__(self):
         return f'DocNode({self.styles}, {self.text})'
 
+    @staticmethod
+    def _get_additional_styles(transform: str) -> dict[str, str]:
+        if not transform:
+            return {}
+        elif transform.lower() in ['marxists.org', 'marxists']:
+            return marxists_style()
+
+        raise ValueError(f'{transform} not recognised')
+
+    @staticmethod
+    def _get_styles_map() -> dict[str, str]:
+        return {
+            'b': 'bold',
+            'strong': 'bold',
+            'i': 'italic',
+            'em': 'italic',
+            'p': 'text',
+            'a': 'text',
+            'h1': 'HEADING_1',
+            'h2': 'HEADING_2',
+            'h3': 'HEADING_3',
+            'h4': 'HEADING_4',
+            'h5': 'HEADING_5',
+            'h6': 'HEADING_6',
+            'hr': 'separator',
+            'br': 'break',
+            'blockquote': 'blockquote'
+        }
+
     @classmethod
-    def from_html(cls, element: PageElement, styles: set[str]):
-        text: str = element.text if isinstance(element, Tag) else str(element)
+    def from_html(cls, element: HTMLElement, transform: str = ''):
+        styles_map = DocNode._get_styles_map()
 
-        print(styles)
+        text: str = element.data.text if isinstance(element.data, Tag) else str(element.data)
+        styles: set[str] = element.styles
 
-        return cls(styles, text)
+        mapped_styles: set[str] = {styles_map[style] for style in styles}
+
+        if transform and isinstance(element.data, Tag) and len(element.data.attrs):
+            transform_styles: dict[str, str] = cls._get_additional_styles(transform)
+            class_styles: set[str] = set(element.data.attrs.get('class', []))
+            extra_styles = {transform_styles[style] for style in class_styles if style in transform_styles}
+            mapped_styles.update(extra_styles)
+
+        return cls(mapped_styles, text)
 
 
 @dataclass
@@ -76,10 +114,8 @@ def _tag_to_text_request(node: DocNode, start: int) -> dict:
 
 def _tag_to_style_request(node: DocNode, start: int, end: int) -> dict:
     style_map: dict[str, dict] = {
-        'em': {'italic': True},
-        'i': {'italic': True},
-        'strong': {'bold': True},
-        'b': {'bold': True}
+        'italic': {'italic': True},
+        'bold': {'bold': True}
     }
 
     styles = set(node.styles)
@@ -106,16 +142,17 @@ def _tag_to_style_request(node: DocNode, start: int, end: int) -> dict:
 
 def _tag_to_paragraph_request(node: DocNode, start: int, end: int) -> dict:
     para_map: dict[str, dict] = {
-        'h1': {'namedStyleType': 'HEADING_1'},
-        'h2': {'namedStyleType': 'HEADING_2'},
-        'h3': {'namedStyleType': 'HEADING_3'},
-        'h4': {'namedStyleType': 'HEADING_4'},
-        'h5': {'namedStyleType': 'HEADING_5'},
-        'h6': {'namedStyleType': 'HEADING_6'},
+        'HEADING_1': {'namedStyleType': 'HEADING_1'},
+        'HEADING_2': {'namedStyleType': 'HEADING_2'},
+        'HEADING_3': {'namedStyleType': 'HEADING_3'},
+        'HEADING_4': {'namedStyleType': 'HEADING_4'},
+        'HEADING_5': {'namedStyleType': 'HEADING_5'},
+        'HEADING_6': {'namedStyleType': 'HEADING_6'},
         'blockquote': {
             'indentStart': {'magnitude': 36, 'unit': 'PT'},
             'indentFirstLine': {'magnitude': 36, 'unit': 'PT'}
-        }
+        },
+        'align-right': {'alignment': 'END'}
     }
 
     styles = set(node.styles)
@@ -211,6 +248,6 @@ def _build_requests(nodes: list[DocNode]) -> list[dict]:
 
 
 def to_docs(title: str, nodes: list[DocNode]) -> None:
-    document: Document = _create_document(title)
     requests: list[dict] = _build_requests(nodes)
+    document: Document = _create_document(title)
     _send_requests_to_document(document, requests)

@@ -13,4 +13,5 @@ if __name__ == '__main__':
 """
     TODO: 
         1. pipeline transform can apply specific styles
+        2. after text styles have been calculated, all the text can be sent in one request (theoretically)
 """

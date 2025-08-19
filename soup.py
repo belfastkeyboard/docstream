@@ -32,7 +32,7 @@ def metadata(soup: BeautifulSoup) -> dict[str, str]:
     return result
 
 
-def nodes(soup: BeautifulSoup) -> list[DocNode]:
+def nodes(soup: BeautifulSoup, transform: str = '') -> list[DocNode]:
     def flatten(element: HTMLElement) -> None:
         style: str = element.data.name if isinstance(element.data, Tag) else 'p'
         element.styles.add(style)
@@ -42,7 +42,7 @@ def nodes(soup: BeautifulSoup) -> list[DocNode]:
                 content = HTMLElement(content, element.styles.copy())
                 flatten(content)
         else:
-            node = DocNode.from_html(element.data, element.styles)
+            node = DocNode.from_html(element, transform)
             result.append(node)
 
     result: list = []
@@ -54,16 +54,3 @@ def nodes(soup: BeautifulSoup) -> list[DocNode]:
         flatten(e)
 
     return result
-
-
-def marxists(soup: BeautifulSoup) -> None:
-    to_decompose: list = [
-        soup.find('p', class_='toplink'),
-        soup.find('p', class_='link'),
-        soup.find('p', class_='updat')
-
-    ]
-
-    for element in to_decompose:
-        if element:
-            element.decompose()

@@ -6,6 +6,7 @@ from yarl import URL
 from typing import Any, Callable
 from send import DocNode
 from bs4 import BeautifulSoup
+from transform import marxists_html
 
 
 def _is_source_a_url(source) -> bool:
@@ -47,16 +48,16 @@ def _get_title_generic(content) -> str:
         raise TypeError(f'Unhandled type: {type(content)}')
 
 
-def _get_nodes_generic(content) -> list[DocNode]:
+def _get_nodes_generic(content, **kwargs) -> list[DocNode]:
     if isinstance(content, BeautifulSoup):
-        return soup.nodes(content)
+        return soup.nodes(content, **kwargs)
     else:
         raise TypeError(f'Unhandled type: {type(content)}')
 
 
 def _transform_content(content, transform: str = '') -> Any:
     if transform.lower() in ['marxists.org', 'marxists']:
-        soup.marxists(content)
+        marxists_html(content)
 
     return content
 
@@ -69,7 +70,7 @@ def _get_content(source, **kwargs) -> tuple[str, list]:
     content = _transform_content(content, **kwargs)
 
     title: str = _get_title_generic(content)
-    nodes: list[DocNode] = _get_nodes_generic(content)
+    nodes: list[DocNode] = _get_nodes_generic(content, **kwargs)
 
     return title, nodes
 
@@ -79,7 +80,7 @@ def _get_default_transform() -> list[Callable]:
         normalise.merge,
         normalise.clean,
         normalise.invert_quotes,
-        lambda c: normalise.swap(c, 'strong', 'em'),
+        lambda c: normalise.swap(c, 'bold', 'italic'),
         normalise.remove_empty,
         normalise.collapse_newlines,
         normalise.invalid_elements,
