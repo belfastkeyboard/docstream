@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from bs4 import ResultSet, Tag
-from bs4.element import NavigableString, PageElement
+from bs4.element import PageElement
 from send import DocNode
 from dataclasses import dataclass
 
@@ -60,3 +60,16 @@ def nodes(soup: BeautifulSoup) -> list[DocNode]:
         flatten(e)
 
     return result
+
+
+def marxists(soup: BeautifulSoup) -> None:
+    to_decompose: list = [
+        soup.find('p', class_='toplink'),
+        soup.find('p', class_='link'),
+        soup.find('p', class_='updat')
+
+    ]
+
+    for element in to_decompose:
+        if element:
+            element.decompose()

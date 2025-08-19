@@ -4,7 +4,7 @@ from pipe import pipeline
 def main() -> None:
     url: str = 'https://www.marxists.org/archive/connolly/1908/06/harpb.htm'
 
-    pipeline(url)
+    pipeline(url, transform='marxists.org')
 
 
 if __name__ == '__main__':
@@ -12,5 +12,5 @@ if __name__ == '__main__':
 
 """
     TODO: 
-        1. pipeline for specific sources i.e. marxists.org
+        1. pipeline transform can apply specific styles
 """

@@ -1,5 +1,31 @@
 import re
 from send import DocNode
+from string import whitespace
+
+
+def strip(nodes: list[DocNode]) -> list[DocNode]:
+    if not nodes:
+        return nodes
+
+    while nodes:
+        node = nodes[0]
+        node.text = node.text.lstrip()
+
+        if not node.text:
+            nodes.pop(0)
+        elif node.text[0] not in whitespace:
+            break
+
+    while nodes:
+        node = nodes[-1]
+        node.text = node.text.rstrip()
+
+        if not node.text:
+            nodes.pop(-1)
+        elif node.text[-1] not in whitespace:
+            break
+
+    return nodes
 
 
 def collapse_newlines(nodes: list[DocNode]) -> list[DocNode]:
@@ -88,3 +114,9 @@ def swap(nodes: list[DocNode], old: str, new: str) -> list[DocNode]:
             node.styles.add(new)
 
     return nodes
+
+
+def invalid_elements(nodes: list[DocNode]) -> list[DocNode]:
+    invalid: set[str] = {'hr'}
+
+    return [node for node in nodes if node.styles.isdisjoint(invalid)]
