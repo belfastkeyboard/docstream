@@ -22,10 +22,14 @@ class Cache:
         self.conn.close()
 
 
-def check_cache(url: str) -> tuple | None:
+def check_cache(url: str) -> bytes | None:
     with Cache() as cursor:
-        cursor.execute('SELECT content FROM cache WHERE url = ?', (url,))
-        return cursor.fetchone()
+        result: tuple = cursor.execute('SELECT content FROM cache WHERE url = ?', (url,)).fetchone()
+
+        if result:
+            result: bytes = result[0]
+
+        return result
 
 
 def store_cache(url: str, content: bytes) -> None:

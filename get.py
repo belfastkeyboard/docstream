@@ -1,41 +1,62 @@
-import requests
-from time import sleep
-from threading import Lock
-from cache import store_cache, check_cache
-
-lock = Lock()
-
-
-def make_request(url: str, retry=3, delay=1, timeout=30) -> bytes | None:
-    with lock:
-        sleep(5)
-
-        for i in range(retry):
-            try:
-                response = requests.get(url, timeout=timeout)
-                response.raise_for_status()
-                return response.content
-            except requests.exceptions.RequestException as e:
-                print(e)
-
-                if i < retry:
-                    sleep(delay)
-                else:
-                    raise
-
-    return None
+from bs4 import BeautifulSoup
+from bs4 import ResultSet, Tag
+from bs4.element import NavigableString, PageElement
+from send import DocNode
+from dataclasses import dataclass
 
 
-def get_content(url: str) -> bytes | None:
-    cached_result: tuple | None = check_cache(url)
+def title(soup: BeautifulSoup) -> str:
+    result: str = ''
 
-    if cached_result:
-        return cached_result[0]
+    element: Tag = soup.find('title')
 
-    online_result: bytes = make_request(url)
+    if element:
+        result = element.text
 
-    if online_result:
-        store_cache(url, online_result)
-        return online_result
+    return result
 
-    return None
+
+def metadata(soup: BeautifulSoup) -> dict[str, str]:
+    result: dict[str, str] = {}
+
+    meta: ResultSet = soup.find_all('meta')
+
+    for data in meta:
+        try:
+            if data.attrs['name'] in ['description', 'keywords', 'author']:
+                key: str = data.attrs['name']
+                value: str = data.attrs['content']
+                result[key] = value
+        except KeyError:
+            continue
+
+    return result
+
+
+def nodes(soup: BeautifulSoup) -> list[DocNode]:
+    @dataclass
+    class Element:
+        data: PageElement
+        styles: set[str]
+
+    def flatten(element: Element) -> None:
+        style: str = element.data.name if isinstance(element.data, Tag) else 'p'
+        element.styles.add(style)
+
+        if isinstance(element.data, Tag) and len(element.data.contents) > 1:
+            for content in element.data.contents:
+                content = Element(content, element.styles.copy())
+                flatten(content)
+        else:
+            node = DocNode.from_html(element.data, element.styles)
+            result.append(node)
+
+    result: list = []
+
+    body: Tag = soup.find('body')
+
+    for e in body:
+        e = Element(e, set())
+        flatten(e)
+
+    return result
