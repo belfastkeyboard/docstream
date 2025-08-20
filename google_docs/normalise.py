@@ -1,6 +1,7 @@
 import re
-from send import DocNode
+from .send import DocNode
 from string import whitespace
+from typing import Callable
 
 
 def strip(nodes: list[DocNode]) -> list[DocNode]:
@@ -120,3 +121,16 @@ def invalid_elements(nodes: list[DocNode]) -> list[DocNode]:
     invalid: set[str] = {'hr'}
 
     return [node for node in nodes if node.styles.isdisjoint(invalid)]
+
+
+def docs_normalisation() -> list[Callable]:
+    return [
+        merge,
+        clean,
+        invert_quotes,
+        lambda c: swap(c, 'bold', 'italic'),
+        remove_empty,
+        collapse_newlines,
+        invalid_elements,
+        strip
+    ]

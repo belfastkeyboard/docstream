@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 from bs4 import ResultSet, Tag
-from send import DocNode
-from helper import HTMLElement
+from google_docs import DocNode, HTMLElement
 
 
 def title(soup: BeautifulSoup) -> str:
@@ -54,3 +53,7 @@ def nodes(soup: BeautifulSoup, transform: str = '') -> list[DocNode]:
         flatten(e)
 
     return result
+
+
+def tree(soup: BeautifulSoup, **kwargs) -> BeautifulSoup:
+    return soup.find('body')

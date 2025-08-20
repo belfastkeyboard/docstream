@@ -1,12 +1,12 @@
 import fetch
 import soup
-import normalise
-import send
 from yarl import URL
 from typing import Any, Callable
-from send import DocNode
 from bs4 import BeautifulSoup
 from transform import marxists_html
+import helper
+from google_docs import docs_normalisation, to_docs, make_style_docs_compliant
+from wordpress import wp_normalisation, to_wordpress, make_style_wordpress_compliant
 
 
 def _is_source_a_url(source) -> bool:
@@ -48,21 +48,26 @@ def _get_title_generic(content) -> str:
         raise TypeError(f'Unhandled type: {type(content)}')
 
 
-def _get_nodes_generic(content, **kwargs) -> list[DocNode]:
-    if isinstance(content, BeautifulSoup):
+def _get_body_generic(content, output: str = 'docs', **kwargs) -> Any:
+    output = helper.destination(output)
+    is_soup: bool = isinstance(content, BeautifulSoup)
+
+    if is_soup and output == 'docs':
         return soup.nodes(content, **kwargs)
-    else:
-        raise TypeError(f'Unhandled type: {type(content)}')
+    elif is_soup and output == 'wordpress':
+        return soup.tree(content, **kwargs)
+
+    raise TypeError(f'Unhandled type: {type(content)}')
 
 
-def _transform_content(content, transform: str = '') -> Any:
-    if transform.lower() in ['marxists.org', 'marxists']:
+def _transform_content(content, transform: str = '', **kwargs) -> Any:
+    if helper.source(transform) == 'marxists':
         marxists_html(content)
 
     return content
 
 
-def _get_content(source, **kwargs) -> tuple[str, list]:
+def _get_content(source, **kwargs) -> tuple[str, Any]:
     source_type: str = _get_source_type(source)
     getter: Callable = _getter_from_type(source_type)
 
@@ -70,29 +75,47 @@ def _get_content(source, **kwargs) -> tuple[str, list]:
     content = _transform_content(content, **kwargs)
 
     title: str = _get_title_generic(content)
-    nodes: list[DocNode] = _get_nodes_generic(content, **kwargs)
+    content: Any = _get_body_generic(content, **kwargs)
 
-    return title, nodes
-
-
-def _get_default_transform() -> list[Callable]:
-    return [
-        normalise.merge,
-        normalise.clean,
-        normalise.invert_quotes,
-        lambda c: normalise.swap(c, 'bold', 'italic'),
-        normalise.remove_empty,
-        normalise.collapse_newlines,
-        normalise.invalid_elements,
-        normalise.strip
-    ]
+    return title, content
 
 
-def _run_pipeline(nodes: list[DocNode], transforms: list[Callable]) -> list[DocNode]:
-    for transform in transforms:
-        nodes = transform(nodes)
+def _get_normalisation(output: str = 'docs', **kwargs) -> list[Callable]:
+    output = helper.destination(output)
 
-    return nodes
+    if output == 'docs':
+        return docs_normalisation()
+    elif output == 'wordpress':
+        return wp_normalisation(**kwargs)
+
+    raise ValueError(f'{output} not recognised')
+
+
+def _get_sender(output: str = 'docs', **kwargs) -> Callable[[str, Any], None]:
+    output = helper.destination(output)
+
+    if output == 'docs':
+        return to_docs
+    elif output == 'wordpress':
+        return to_wordpress
+
+    raise ValueError(f'{output} not recognised')
+
+
+def _get_style(output: str = 'docs', **kwargs) -> Callable or None:
+    output = helper.destination(output)
+
+    if output == 'docs':
+        return make_style_docs_compliant
+    elif output == 'wordpress':
+        return make_style_wordpress_compliant
+
+    raise ValueError(f'{output} not recognised')
+
+
+def _run_normalisation_pipeline(content: Any, normalise: list[Callable]) -> None:
+    for func in normalise:
+        content = func(content)
 
 
 def pipeline(source, **kwargs) -> None:
@@ -105,7 +128,12 @@ def pipeline(source, **kwargs) -> None:
     :return: None
     """
 
-    title, nodes = _get_content(source, **kwargs)
-    transform = _get_default_transform()
-    nodes = _run_pipeline(nodes, transform)
-    send.to_docs(title, nodes)
+    sender: Callable[[str, list], None] = _get_sender(**kwargs)
+    normalise: list[Callable] = _get_normalisation(**kwargs)
+    title, content = _get_content(source, **kwargs)
+    stylise: Callable = _get_style(**kwargs)
+
+    _run_normalisation_pipeline(content, normalise)
+
+    stylise(content, **kwargs)
+    sender(title, content)

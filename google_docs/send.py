@@ -3,66 +3,9 @@ import pickle
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from bs4 import Tag
 from dataclasses import dataclass
 from typing import Any
-from helper import HTMLElement
-from transform import marxists_style
-
-
-class DocNode:
-    def __init__(self, styles: set[str], text: str):
-        self.text = text
-        self.styles = styles
-
-    def __str__(self):
-        return f'DocNode({self.styles}, {self.text})'
-
-    @staticmethod
-    def _get_additional_styles(transform: str) -> dict[str, str]:
-        if not transform:
-            return {}
-        elif transform.lower() in ['marxists.org', 'marxists']:
-            return marxists_style()
-
-        raise ValueError(f'{transform} not recognised')
-
-    @staticmethod
-    def _get_styles_map() -> dict[str, str]:
-        return {
-            'b': 'bold',
-            'strong': 'bold',
-            'i': 'italic',
-            'em': 'italic',
-            'p': 'text',
-            'a': 'text',
-            'h1': 'HEADING_1',
-            'h2': 'HEADING_2',
-            'h3': 'HEADING_3',
-            'h4': 'HEADING_4',
-            'h5': 'HEADING_5',
-            'h6': 'HEADING_6',
-            'hr': 'separator',
-            'br': 'break',
-            'blockquote': 'blockquote'
-        }
-
-    @classmethod
-    def from_html(cls, element: HTMLElement, transform: str = ''):
-        styles_map = DocNode._get_styles_map()
-
-        text: str = element.data.text if isinstance(element.data, Tag) else str(element.data)
-        styles: set[str] = element.styles
-
-        mapped_styles: set[str] = {styles_map[style] for style in styles}
-
-        if transform and isinstance(element.data, Tag) and len(element.data.attrs):
-            transform_styles: dict[str, str] = cls._get_additional_styles(transform)
-            class_styles: set[str] = set(element.data.attrs.get('class', []))
-            extra_styles = {transform_styles[style] for style in class_styles if style in transform_styles}
-            mapped_styles.update(extra_styles)
-
-        return cls(mapped_styles, text)
+from .type import DocNode
 
 
 @dataclass
@@ -71,7 +14,7 @@ class Document:
     id: str
 
 
-def _create_document(title: str) -> Document:
+def create_document(title: str) -> Document:
     creds = None
 
     # token.pickle stores your access/refresh tokens
@@ -97,22 +40,24 @@ def _create_document(title: str) -> Document:
     return Document(service, document_id)
 
 
-def _send_requests_to_document(document: Document, requests: list[dict]) -> None:
+def send_requests_to_document(document: Document, requests: list[dict]) -> None:
     document.service.documents().batchUpdate(documentId=document.id, body={'requests': requests}).execute()
 
 
-def _tag_to_text_request(node: DocNode, start: int) -> dict:
+def nodes_to_text_request(nodes: list[DocNode]) -> dict:
+    text: str = ''.join([node.text for node in nodes])
+
     return {
         'insertText': {
             'location': {
-                'index': start
+                'index': 1
             },
-            'text': node.text
+            'text': text
         }
     }
 
 
-def _tag_to_style_request(node: DocNode, start: int, end: int) -> dict:
+def node_to_style_request(node: DocNode, start: int, end: int) -> dict:
     style_map: dict[str, dict] = {
         'italic': {'italic': True},
         'bold': {'bold': True}
@@ -140,7 +85,7 @@ def _tag_to_style_request(node: DocNode, start: int, end: int) -> dict:
         }
 
 
-def _tag_to_paragraph_request(node: DocNode, start: int, end: int) -> dict:
+def node_to_paragraph_request(node: DocNode, start: int, end: int) -> dict:
     para_map: dict[str, dict] = {
         'HEADING_1': {'namedStyleType': 'HEADING_1'},
         'HEADING_2': {'namedStyleType': 'HEADING_2'},
@@ -177,7 +122,7 @@ def _tag_to_paragraph_request(node: DocNode, start: int, end: int) -> dict:
         }
 
 
-def _build_setup_styles(end: int) -> list[dict]:
+def build_setup_styles(end: int) -> list[dict]:
     para_style: dict = {
         'namedStyleType': 'NORMAL_TEXT',
         'alignment': 'JUSTIFIED',
@@ -214,11 +159,10 @@ def _build_setup_styles(end: int) -> list[dict]:
     return [para, text]
 
 
-def _build_requests(nodes: list[DocNode]) -> list[dict]:
+def build_requests(nodes: list[DocNode]) -> list[dict]:
     start = 1
     end = start
 
-    text_requests: list[dict] = []
     style_requests: list[dict] = []
     paragraph_requests: list[dict] = []
 
@@ -228,13 +172,10 @@ def _build_requests(nodes: list[DocNode]) -> list[dict]:
 
         end = start + len(node.text)
 
-        text_request: dict = _tag_to_text_request(node, start)
-        style_request: dict = _tag_to_style_request(node, start, end)
-        paragraph_request: dict = _tag_to_paragraph_request(node, start, end)
+        style_request: dict = node_to_style_request(node, start, end)
+        paragraph_request: dict = node_to_paragraph_request(node, start, end)
 
         start = end
-
-        text_requests.append(text_request)
 
         if style_request:
             style_requests.append(style_request)
@@ -242,12 +183,13 @@ def _build_requests(nodes: list[DocNode]) -> list[dict]:
         if paragraph_request:
             paragraph_requests.append(paragraph_request)
 
-    setup_styles: list[dict] = _build_setup_styles(end)
+    text_request: dict = nodes_to_text_request(nodes)
+    setup_styles: list[dict] = build_setup_styles(end)
 
-    return text_requests + setup_styles + style_requests + paragraph_requests
+    return [text_request] + setup_styles + style_requests + paragraph_requests
 
 
 def to_docs(title: str, nodes: list[DocNode]) -> None:
-    requests: list[dict] = _build_requests(nodes)
-    document: Document = _create_document(title)
-    _send_requests_to_document(document, requests)
+    requests: list[dict] = build_requests(nodes)
+    # document: Document = create_document(title)
+    # send_requests_to_document(document, requests)
