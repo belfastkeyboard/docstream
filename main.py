@@ -12,6 +12,7 @@ if __name__ == '__main__':
 
 """
     TODO: 
-        1. pipeline transform can apply specific styles
-        2. after text styles have been calculated, all the text can be sent in one request (theoretically)
+        1. after text styles have been calculated, all the text can be sent in one request (theoretically)
+        2. wordpress has a REST API that can create pages
+        3. inDesign also has a programmatic API for generating documents
 """
