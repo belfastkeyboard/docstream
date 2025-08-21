@@ -1,5 +1,3 @@
-from bs4 import Comment, Tag
-from bs4.element import AttributeValueList
 import helper
 
 
@@ -37,29 +35,3 @@ def get_name_translator() -> dict[str, str]:
         'table': 'table',
         'hr': 'separator',
     }
-
-
-def make_style_wordpress_compliant(tree: Tag, **kwargs) -> None:
-    table: dict[str, str] = get_style_table(**kwargs)
-    name_translation: dict[str, str] = get_name_translator()
-    tags = tree.find_all(class_=table.keys())
-
-    for tag in tags:
-        if not isinstance(tag, Tag):
-            continue
-
-        keys = [k for k in tag['class'] if k in table]
-        values = [table[k] for k in tag['class'] if k in table]
-        name: str = name_translation[tag.name]
-
-        pre = Comment(f'<!-- wp:{name} {{{",".join(values)}}} -->')
-        post = Comment(f'<!-- /wp:{name} -->')
-
-        tag.insert_before(pre)
-        tag.insert_after(post)
-
-        update = set(tag['class']).difference(set(keys))
-        tag['class'] = AttributeValueList(update)
-
-        if not update:
-            del tag['class']

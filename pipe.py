@@ -5,8 +5,8 @@ from typing import Any, Callable
 from bs4 import BeautifulSoup
 from transform import marxists_html
 import helper
-from google_docs import docs_normalisation, to_docs, make_style_docs_compliant
-from wordpress import wp_normalisation, to_wordpress, make_style_wordpress_compliant
+from google_docs import docs_normalisation, to_docs
+from wordpress import wp_normalisation, to_wordpress
 
 
 def _is_source_a_url(source) -> bool:
@@ -102,18 +102,7 @@ def _get_sender(output: str = 'docs', **kwargs) -> Callable[[str, Any], None]:
     raise ValueError(f'{output} not recognised')
 
 
-def _get_style(output: str = 'docs', **kwargs) -> Callable or None:
-    output = helper.destination(output)
-
-    if output == 'docs':
-        return make_style_docs_compliant
-    elif output == 'wordpress':
-        return make_style_wordpress_compliant
-
-    raise ValueError(f'{output} not recognised')
-
-
-def _run_normalisation_pipeline(content: Any, normalise: list[Callable]) -> None:
+def _run_pipeline(content: Any, normalise: list[Callable]) -> None:
     for func in normalise:
         content = func(content)
 
@@ -131,9 +120,7 @@ def pipeline(source, **kwargs) -> None:
     sender: Callable[[str, list], None] = _get_sender(**kwargs)
     normalise: list[Callable] = _get_normalisation(**kwargs)
     title, content = _get_content(source, **kwargs)
-    stylise: Callable = _get_style(**kwargs)
 
-    _run_normalisation_pipeline(content, normalise)
+    _run_pipeline(content, normalise)
 
-    stylise(content, **kwargs)
     sender(title, content)

@@ -11,7 +11,13 @@ if __name__ == '__main__':
     main()
 
 """
-    TODO: 
-        1. wordpress has a REST API that can create pages
+    TODO:
+        1. WordPress 
+            i. invert quotes for wordpress
+            ii. infobox for wordpress
+            iii. author for wordpress (Editorial Team?)
+            iv. excerpt for wordpress
+            v. proper title for wordpress
+            
         2. inDesign also has a programmatic API for generating documents
 """

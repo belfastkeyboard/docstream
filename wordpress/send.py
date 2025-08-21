@@ -1,32 +1,33 @@
 import requests
+from requests.auth import HTTPBasicAuth
 from bs4 import BeautifulSoup, Tag
-from bs4.element import PageElement
+import json
+from typing import Any
+from string import punctuation
+from .type import WPNode
 
 
-def send_post_to_wordpress(url: str, data: dict, auth: tuple[str, str]) -> None:
-    requests.post(url, json=data, auth=auth)
+def send_post_to_wordpress(url: str, data: dict, auth: HTTPBasicAuth) -> tuple[int, Any]:
+    response = requests.post(url, json=data, auth=auth)
+    return response.status_code, response.json()
 
 
-def stringify_content(tree: BeautifulSoup) -> str:
-    stringified_content: str = ''
-
-    for child in tree.children:
-        if isinstance(child, Tag):
-            stringified_content += child.prettify()  # remove pretty printing
-        elif isinstance(child, PageElement):
-            stringified_content += str(child)
-
-    return stringified_content
+def stringify_content(nodes: list[WPNode]) -> str:
+    return '\n\n'.join([str(node) for node in nodes])
 
 
 def get_endpoint() -> str:
-    return 'https://cartlann.org/wp-json/wp/v2/pages'
+    with open('wp.json', 'r') as f:
+        data = json.load(f)
+
+    return data['endpoint']
 
 
 def generate_slug(title: str) -> str:
     table = str.maketrans(
         'áéíóúḃċḋḟġṁṗṡṫ',
-        'aeioubcdfgmpst'
+        'aeioubcdfgmpst',
+        punctuation
     )
 
     clean: str = title.translate(table)
@@ -43,13 +44,31 @@ def generate_rest_api_data(title: str, slug: str, content: str) -> dict:
     }
 
 
+def get_auth_data() -> HTTPBasicAuth:
+    with open('wp.json', 'r') as f:
+        credentials = json.load(f)
+
+    name: str = credentials['name']
+    pw: str = credentials['password'].replace(' ', '')
+
+    return HTTPBasicAuth(name, pw)
+
+
+def generate_nodes_from_tree(tree: Tag) -> list[WPNode]:
+    return [WPNode(tag) for tag in tree.contents]
+
+
 def to_wordpress(title: str, tree: BeautifulSoup) -> None:
     url: str = get_endpoint()
-    content: str = stringify_content(tree)
+    nodes: list[WPNode] = generate_nodes_from_tree(tree)
+    content: str = stringify_content(nodes)
     slug: str = generate_slug(title)
     data: dict = generate_rest_api_data(title, slug, content)
+    auth: HTTPBasicAuth = get_auth_data()
 
-    # send_post_to_wordpress(url, data, )
-
-    with open('new.txt', 'w') as f:
+    with open("file.txt", "w") as f:
         f.write(content)
+
+    status_code, response_json = send_post_to_wordpress(url, data, auth)
+    print(f'Status code: {status_code}')
+    print(f'Response JSON: {json.dumps(response_json, indent=4)}')

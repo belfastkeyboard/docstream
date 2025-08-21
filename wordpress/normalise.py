@@ -59,16 +59,14 @@ def clean(tree: Tag) -> Tag:
 
 
 def remove_link(tree: Tag) -> Tag:
-    links = tree.find_all('a')
-
-    for link in links:
+    for link in tree.find_all('a'):
         if not isinstance(link, Tag):
             continue
 
-        link.name = 'p'
+        parent: Tag = link.parent
 
-        if 'href' in link.attrs:
-            del link.attrs['href']
+        if parent.name == 'p':
+            link.replace_with((NavigableString(link.text)))
 
     return tree
 

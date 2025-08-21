@@ -7,7 +7,8 @@ def marxists_html(soup: BeautifulSoup) -> None:
         soup.find('p', class_='link'),
         soup.find('p', class_='updat'),
         soup.find('hr', class_='infotop'),
-        soup.find('hr', class_='infobot')
+        soup.find('hr', class_='infobot'),
+        soup.find("p", class_="updat").find_previous('hr')
     ]
 
     for element in to_decompose:
