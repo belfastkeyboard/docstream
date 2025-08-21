@@ -28,7 +28,7 @@ def create_document(title: str) -> Document:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', ['https://www.googleapis.com/auth/documents'])
+                'google.json', ['https://www.googleapis.com/auth/documents'])
             creds = flow.run_local_server(port=0)
 
         with open('token.pickle', 'wb') as token:
@@ -191,5 +191,5 @@ def build_requests(nodes: list[DocNode]) -> list[dict]:
 
 def to_docs(title: str, nodes: list[DocNode]) -> None:
     requests: list[dict] = build_requests(nodes)
-    # document: Document = create_document(title)
-    # send_requests_to_document(document, requests)
+    document: Document = create_document(title)
+    send_requests_to_document(document, requests)

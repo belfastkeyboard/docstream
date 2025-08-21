@@ -2,14 +2,13 @@ import requests
 from requests.auth import HTTPBasicAuth
 from bs4 import BeautifulSoup, Tag
 import json
-from typing import Any
 from string import punctuation
 from .type import WPNode
 
 
-def send_post_to_wordpress(url: str, data: dict, auth: HTTPBasicAuth) -> tuple[int, Any]:
+def send_post_to_wordpress(url: str, data: dict, auth: HTTPBasicAuth) -> int:
     response = requests.post(url, json=data, auth=auth)
-    return response.status_code, response.json()
+    return response.status_code
 
 
 def stringify_content(nodes: list[WPNode]) -> str:
@@ -17,7 +16,7 @@ def stringify_content(nodes: list[WPNode]) -> str:
 
 
 def get_endpoint() -> str:
-    with open('wp.json', 'r') as f:
+    with open('wordpress.json', 'r') as f:
         data = json.load(f)
 
     return data['endpoint']
@@ -45,7 +44,7 @@ def generate_rest_api_data(title: str, slug: str, content: str) -> dict:
 
 
 def get_auth_data() -> HTTPBasicAuth:
-    with open('wp.json', 'r') as f:
+    with open('wordpress.json', 'r') as f:
         credentials = json.load(f)
 
     name: str = credentials['name']
@@ -69,6 +68,5 @@ def to_wordpress(title: str, tree: BeautifulSoup) -> None:
     with open("file.txt", "w") as f:
         f.write(content)
 
-    status_code, response_json = send_post_to_wordpress(url, data, auth)
-    print(f'Status code: {status_code}')
-    print(f'Response JSON: {json.dumps(response_json, indent=4)}')
+    status_code = send_post_to_wordpress(url, data, auth)
+    print(f'{"Success" if status_code == 201 else "Failure"}')
