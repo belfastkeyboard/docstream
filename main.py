@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
 """
     TODO:
-        HTML:
+        HTML
             i. invert nested quotes
     
         Google Docs
@@ -23,5 +23,5 @@ if __name__ == '__main__':
             ii. author for wordpress (Editorial Team?)
             iii. excerpt for wordpress
             
-        inDesign also has a programmatic API for generating documents
+        inDesign
 """
