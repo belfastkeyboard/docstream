@@ -31,7 +31,7 @@ def metadata(soup: BeautifulSoup) -> dict[str, str]:
     return result
 
 
-def nodes(soup: BeautifulSoup, transform: str = '') -> list[DocNode]:
+def nodes(tag: Tag, transform: str = '') -> list[DocNode]:
     def flatten(element: HTMLElement) -> None:
         style: str = element.data.name if isinstance(element.data, Tag) else 'p'
         element.styles.add(style)
@@ -46,9 +46,7 @@ def nodes(soup: BeautifulSoup, transform: str = '') -> list[DocNode]:
 
     result: list = []
 
-    body: Tag = soup.find('body')
-
-    for e in body:
+    for e in tag:
         e = HTMLElement(e, set())
         flatten(e)
 

@@ -2,6 +2,7 @@ from typing import Callable
 from bs4 import Tag
 from bs4.element import NavigableString, PageElement, AttributeValueList
 import helper
+import re
 
 
 def remove_empty(tree: Tag) -> Tag:
@@ -113,6 +114,51 @@ def strip_attributes(tree: Tag) -> Tag:
     return tree
 
 
+def invert_quotes(tree: Tag) -> Tag:
+    def find_child(index: int) -> int:
+        assert isinstance(content, Tag)
+
+        current: int = 0
+        i = 0
+
+        for i, c in enumerate(content.contents):
+            if current < index:
+                current = len(c.text)
+
+        return i
+
+    for content in tree.contents:
+        assert isinstance(content, Tag)
+
+        text: str = content.text
+        matches = re.findall(r'(".*?(?:"|$))', text)
+
+        if not matches:
+            continue
+
+        qi = [i for t in map(lambda m: (m.start(), m.end() - 1), map(lambda m: re.search(m, text), matches)) for i in t]
+
+        for quote_index in qi:
+            i = find_child(quote_index)
+            element = content.contents[i]
+
+            pre = text[:quote_index]
+            post = text[quote_index + 1:]
+            text = f'{pre}\'{post}'
+
+            if isinstance(element, NavigableString):
+                ns = NavigableString(text)
+                element.replace_with(ns)
+            elif isinstance(element, Tag):
+                assert len(element.contents) == 1
+
+                child = element.contents[0]
+                ns = NavigableString(text)
+                child.replace_with(ns)
+
+    return tree
+
+
 def marxists_normalisation() -> list[Callable]:
     return [remove_classes]
 
@@ -129,14 +175,15 @@ def get_source_normalisation(transform: str = '', **kwargs) -> list[Callable]:
     raise ValueError(f'{transform} not recognised')
 
 
-def wp_normalisation(**kwargs) -> list[Callable]:
+def normalisation_pipeline(**kwargs) -> list[Callable]:
     generic = [
         remove_link,
         remove_newlines,
         strip_attributes,
         lambda c: swap(c, 'strong', 'em'),
         remove_empty,
-        clean
+        clean,
+        invert_quotes
     ]
 
     extra = get_source_normalisation(**kwargs)

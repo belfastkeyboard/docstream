@@ -4,7 +4,7 @@ from pipe import pipeline
 def main() -> None:
     url: str = 'https://www.marxists.org/archive/connolly/1908/06/harpb.htm'
 
-    pipeline(url, transform='marxists.org', output='wordpress')
+    pipeline(url, transform='marxists.org', output='docs')
 
 
 if __name__ == '__main__':
@@ -12,11 +12,16 @@ if __name__ == '__main__':
 
 """
     TODO:
-        1. WordPress 
-            i. invert quotes for wordpress
-            ii. infobox for wordpress
-            iii. author for wordpress (Editorial Team?)
-            iv. excerpt for wordpress
+        HTML:
+            i. invert nested quotes
+    
+        Google Docs
+            i. merge nodes before sending, separate nodes with newlines
+        
+        WordPress 
+            i. infobox for wordpress
+            ii. author for wordpress (Editorial Team?)
+            iii. excerpt for wordpress
             
-        2. inDesign also has a programmatic API for generating documents
+        inDesign also has a programmatic API for generating documents
 """
