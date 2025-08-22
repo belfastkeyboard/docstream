@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from string import whitespace, punctuation
 
 
 def marxists_html(soup: BeautifulSoup) -> None:
@@ -14,3 +15,33 @@ def marxists_html(soup: BeautifulSoup) -> None:
     for element in to_decompose:
         if element:
             element.decompose()
+
+
+def marxists_title(soup: BeautifulSoup) -> str:
+    title: str = ''
+
+    h1 = soup.find('h1')
+    if h1:
+        title = h1.text
+
+    return title
+
+
+def marxists_publication(soup: BeautifulSoup) -> str:
+    publication: str = ''
+
+    info = soup.select_one('p.info strong')
+    if info:
+        publication = info.text
+
+    return publication
+
+
+def marxists_date(soup: BeautifulSoup) -> str:
+    date: str = ''
+
+    info = soup.select_one('p.info strong')
+    if info:
+        date = info.next_sibling.text.strip(whitespace + punctuation)
+
+    return date

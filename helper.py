@@ -8,6 +8,7 @@ def source(src: str) -> str:
     src = src.lower()
 
     string_map: dict[str, str] = {
+        '': '',
         'marxists': 'marxists',
         'marxists.org': 'marxists'
     }

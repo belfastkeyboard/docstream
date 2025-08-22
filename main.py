@@ -17,7 +17,6 @@ if __name__ == '__main__':
             ii. infobox for wordpress
             iii. author for wordpress (Editorial Team?)
             iv. excerpt for wordpress
-            v. proper title for wordpress
             
         2. inDesign also has a programmatic API for generating documents
 """

@@ -189,7 +189,7 @@ def build_requests(nodes: list[DocNode]) -> list[dict]:
     return [text_request] + setup_styles + style_requests + paragraph_requests
 
 
-def to_docs(title: str, nodes: list[DocNode]) -> None:
+def to_docs(title: str, nodes: list[DocNode], **kwargs) -> None:
     requests: list[dict] = build_requests(nodes)
     document: Document = create_document(title)
     send_requests_to_document(document, requests)

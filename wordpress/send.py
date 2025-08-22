@@ -57,10 +57,10 @@ def generate_nodes_from_tree(tree: Tag) -> list[WPNode]:
     return [WPNode(tag) for tag in tree.contents]
 
 
-def to_wordpress(title: str, tree: BeautifulSoup) -> None:
+def to_wordpress(title: str, content: BeautifulSoup, **kwargs) -> None:
     url: str = get_endpoint()
-    nodes: list[WPNode] = generate_nodes_from_tree(tree)
-    content: str = stringify_content(nodes)
+    content: list[WPNode] = generate_nodes_from_tree(content)
+    content: str = stringify_content(content)
     slug: str = generate_slug(title)
     data: dict = generate_rest_api_data(title, slug, content)
     auth: HTTPBasicAuth = get_auth_data()
@@ -68,5 +68,5 @@ def to_wordpress(title: str, tree: BeautifulSoup) -> None:
     with open("file.txt", "w") as f:
         f.write(content)
 
-    status_code = send_post_to_wordpress(url, data, auth)
-    print(f'{"Success" if status_code == 201 else "Failure"}')
+    # status_code = send_post_to_wordpress(url, data, auth)
+    # print(f'{"Success" if status_code == 201 else "Failure"}')
