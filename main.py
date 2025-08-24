@@ -1,4 +1,5 @@
 from pipe import pipeline
+from plugin import load_plugins
 
 
 def main() -> None:
