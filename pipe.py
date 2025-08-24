@@ -8,6 +8,7 @@ import helper
 from google_docs import to_docs
 from wordpress import to_wordpress
 from normalise import normalisation_pipeline
+from generic import StructuredText
 
 
 def _is_source_a_url(source) -> bool:
@@ -109,7 +110,7 @@ def _get_normalisation(**kwargs) -> list[Callable]:
     return normalisation_pipeline(**kwargs)
 
 
-def _get_sender(output: str = 'docs', **kwargs) -> Callable[[str, Any], None]:
+def _get_sender(output: str = 'docs', **kwargs) -> Callable:
     output = helper.destination(output)
 
     if output == 'docs':
@@ -139,6 +140,10 @@ def pipeline(source, **kwargs) -> None:
     normalise: list[Callable] = _get_normalisation(**kwargs)
     data: dict = _get_data(source, **kwargs)
     content: Any = data.get('content', None)
+
+    lol = []
+    for x in content:
+        lol.append(StructuredText.from_html(x))
 
     assert isinstance(content, Tag)
 

@@ -12,11 +12,19 @@ if __name__ == '__main__':
 
 """
     TODO:
+        PLUGIN ARCHITECTURE
+            i. create basic architecture
+            
+        GENERIC TRANSFORM
+            i. actually do this
+            ii. integrate plugins
+    
         HTML
             i. invert nested quotes
     
         Google Docs
-            i. merge nodes before sending, separate nodes with newlines
+            i. docs output formatting is broken
+            ii. seems to be the result of a normalisation function that strips all newlines 
         
         WordPress 
             i. infobox for wordpress

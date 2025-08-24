@@ -196,4 +196,8 @@ def to_docs(content: Tag, title: str = '', **kwargs) -> None:
     requests: list[dict] = build_requests(nodes)
     document: Document = create_document(title)
 
-    send_requests_to_document(document, requests)
+    with open('file.txt', 'w') as f:
+        for node in nodes:
+            f.write(node.text)
+
+    # send_requests_to_document(document, requests)
