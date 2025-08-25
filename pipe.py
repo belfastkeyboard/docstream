@@ -3,7 +3,6 @@ import soup
 from yarl import URL
 from typing import Any, Callable
 from bs4 import BeautifulSoup, Tag
-from transform import marxists_html, marxists_title, marxists_publication, marxists_date
 import helper
 from google_docs import to_docs
 from wordpress import to_wordpress
@@ -13,11 +12,9 @@ from typing import TypedDict
 
 
 class PipelineData(TypedDict):
-    title: str
-    publication: str
-    date: str
     source: Any
     document: RichTextDocument
+    metadata: dict[str, str]
 
 
 def _is_source_a_url(source) -> bool:
@@ -41,22 +38,6 @@ def _get_source_type(source) -> str:
     raise TypeError(f'source type: {type(source)} is not valid')
 
 
-def _get_soup_title(content, transform: str = '', **kwargs) -> str:
-    transform = helper.source(transform)
-
-    if transform == 'marxists':
-        return marxists_title(content)
-
-    return soup.title(content)
-
-
-def _get_title_generic(content, **kwargs) -> str:
-    if isinstance(content, BeautifulSoup):
-        return _get_soup_title(content, **kwargs)
-    else:
-        raise TypeError(f'Unhandled type: {type(content)}')
-
-
 def _get_body_generic(content, **kwargs) -> Tag:
     if isinstance(content, BeautifulSoup):
         return soup.tree(content, **kwargs)
@@ -64,9 +45,12 @@ def _get_body_generic(content, **kwargs) -> Tag:
     raise TypeError(f'Unhandled type: {type(content)}')
 
 
-def _transform_data(content, transform: str = '', **kwargs) -> Any:
-    if helper.source(transform) == 'marxists':
-        marxists_html(content)
+def _modify_source(content, plugins: dict | None = None, **kwargs) -> Any:
+    if not plugins or not plugins.get('modify-source'):
+        return content
+    else:
+        _modify = plugins.get('modify-source')[0]
+        content = _modify(content, **kwargs)
 
     return content
 
@@ -80,40 +64,35 @@ def _do_get_data(source) -> Any:
         raise ValueError(f'{src_type} not recognised')
 
 
-def _get_publication_generic(content, transform: str = '', **kwargs) -> str:
-    transform = helper.source(transform)
+def _get_metadata_generic(content, **kwargs) -> tuple[str, str, str]:
+    return '', '', ''
 
-    if transform == 'marxists':
-        return marxists_publication(content)
+
+def _get_metadata(content: Any, plugins: dict | None = None, **kwargs) -> dict[str, str]:
+    if not plugins or not plugins.get('meta'):
+        title, publication, date = _get_metadata_generic(content, **kwargs)
     else:
-        raise ValueError(f'{transform} not recognised')
-
-
-def _get_date_generic(content, transform: str = '', **kwargs) -> str:
-    transform = helper.source(transform)
-
-    if transform == 'marxists':
-        return marxists_date(content)
-    else:
-        raise ValueError(f'{transform} not recognised')
-
-
-def _get_data(source, **kwargs) -> PipelineData:
-    source = _do_get_data(source)
-    content = _transform_data(source, **kwargs)
-
-    title: str = _get_title_generic(content)
-    publication: str = _get_publication_generic(content, **kwargs)
-    date: str = _get_date_generic(content, **kwargs)
-    body: Any = _get_body_generic(content, **kwargs)
-    document: RichTextDocument = _adaptor(body, **kwargs)
+        _get_meta = plugins.get('meta')[0]
+        title, publication, date = _get_meta(content, **kwargs)
 
     return {
         'title': title,
         'publication': publication,
-        'date': date,
+        'date': date
+    }
+
+
+def _get_data(source, **kwargs) -> PipelineData:
+    source = _do_get_data(source)
+    content = _modify_source(source, **kwargs)
+    body: Any = _get_body_generic(content, **kwargs)
+    document: RichTextDocument = _adaptor(body, **kwargs)
+    metadata: dict[str, str] = _get_metadata(content, **kwargs)
+
+    return {
         'document': document,
-        'source': source
+        'source': source,
+        'metadata': metadata
     }
 
 
@@ -164,7 +143,7 @@ def pipeline(source, **kwargs) -> None:
     :return: None
     """
 
-    sender: Callable[[...], str] = _get_sender(**kwargs)
+    sender: Callable[[...], None] = _get_sender(**kwargs)
     normalise: list[Callable[[RichTextDocument], None]] = _get_normalisation(**kwargs)
     data: PipelineData = _get_data(source, **kwargs)
 

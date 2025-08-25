@@ -209,7 +209,11 @@ def build_requests(runs: list[DocRun]) -> list[dict]:
     return text_request + setup_styles + style_requests + paragraph_requests
 
 
-def to_docs(document: RichTextDocument, title: str = '', **kwargs) -> None:
+def to_docs(document: RichTextDocument, metadata: dict | None = None, **kwargs) -> None:
+    title: str = metadata['title']
+    publication: str = metadata['publication']
+    date: str = metadata['date']
+
     runs: list[DocRun] = adapt_from_rich_text(document)
     requests: list[dict] = build_requests(runs)
 

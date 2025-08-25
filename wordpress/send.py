@@ -7,7 +7,7 @@ from string import punctuation
 from generic import RichTextDocument
 
 
-def send_post_to_wordpress(url: str, data: dict, auth: HTTPBasicAuth) -> int:
+def send_post_to_wordpress(url: str, author: int, data: dict, auth: HTTPBasicAuth) -> int:
     response = requests.post(url, json=data, auth=auth)
     return response.status_code
 
@@ -17,6 +17,13 @@ def get_endpoint() -> str:
         data = json.load(f)
 
     return data['endpoint']
+
+
+def get_author() -> int:
+    with open('wordpress.json', 'r') as f:
+        data = json.load(f)
+
+    return data['author']
 
 
 def generate_slug(title: str) -> str:
@@ -31,12 +38,17 @@ def generate_slug(title: str) -> str:
     return '-'.join(clean.split(' ')).lower()
 
 
-def generate_rest_api_data(title: str, slug: str, content: str) -> dict:
+def generate_rest_api_data(title: str, slug: str, content: BeautifulSoup) -> dict:
+    text: str = content.text
+    index = min(len(text), 180)
+
     return {
         'title': title,
         'slug': slug,
-        'content': content,
-        'status': 'draft'
+        'content': str(content),
+        'status': 'draft',
+        'excerpt': f'{content.text[:index]}...',
+        'author': 6
     }
 
 
@@ -50,15 +62,20 @@ def get_auth_data() -> HTTPBasicAuth:
     return HTTPBasicAuth(name, pw)
 
 
-def to_wordpress(document: RichTextDocument, title: str = '', **kwargs) -> None:
+def to_wordpress(document: RichTextDocument, metadata: dict | None = None, **kwargs) -> None:
+    title: str = metadata['title']
+    publication: str = metadata['publication']
+    date: str = metadata['date']
+
     url: str = get_endpoint()
+    author: int = get_author()
     content: BeautifulSoup = build_html_from_document(document)
     slug: str = generate_slug(title)
-    data: dict = generate_rest_api_data(title, slug, str(content))
+    data: dict = generate_rest_api_data(title, slug, content)
     auth: HTTPBasicAuth = get_auth_data()
 
     with open('file.txt', 'w') as f:
         json.dump(data, f, indent=4)
 
-    # status_code = send_post_to_wordpress(url, data, auth)
-    # print(f'{"Success" if status_code == 201 else "Failure"}')
+    status_code = send_post_to_wordpress(url, author, data, auth)
+    print(f'{"Success" if status_code == 201 else "Failure"}')
