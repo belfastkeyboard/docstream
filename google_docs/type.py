@@ -3,64 +3,76 @@ from bs4 import Tag
 from bs4.element import PageElement
 import helper
 from .style import marxists_style
+from generic import RichText, RichTextDocument
 
 
 @dataclass
-class HTMLElement:
-    data: PageElement
-    styles: set[str]
+class DocRun:
+    text: str
+    text_styles: set[str]
+    paragraph_styles: set[str]
 
 
-class DocNode:
-    def __init__(self, styles: set[str], text: str):
-        self.text = text
-        self.styles = styles
+def adapt_from_rich_text(document: RichTextDocument) -> list[DocRun]:
+    def get_anchor_meta() -> tuple[dict, dict, list]:
+        anchors_map = RichText.get_style_to_anchors_map()
+        items = anchors_map.items()
 
-    def __str__(self):
-        return f'DocNode({self.styles}, {self.text})'
+        start_lookup = {start: style for style, (start, _) in items}
+        end_lookup = {end: style for style, (_, end) in items}
+        anchors = [a for pair in anchors_map.values() for a in pair]
 
-    @staticmethod
-    def get_additional_styles(transform: str) -> dict[str, str]:
-        if not transform:
-            return {}
-        elif helper.source(transform) == 'marxists':
-            return marxists_style()
+        return start_lookup, end_lookup, anchors
 
-        raise ValueError(f'{transform} not recognised')
+    def can_split_on_style(text: str, anchors: list[str]) -> str:
+        i: int = 0
+        found: str = ''
 
-    @staticmethod
-    def get_styles_map() -> dict[str, str]:
-        return {
-            'b': 'bold',
-            'strong': 'bold',
-            'i': 'italic',
-            'em': 'italic',
-            'p': 'text',
-            'a': 'text',
-            'h1': 'HEADING_1',
-            'h2': 'HEADING_2',
-            'h3': 'HEADING_3',
-            'h4': 'HEADING_4',
-            'h5': 'HEADING_5',
-            'h6': 'HEADING_6',
-            'hr': 'separator',
-            'br': 'break',
-            'blockquote': 'blockquote'
-        }
+        while i < len(text):
+            char: str = text[i]
 
-    @classmethod
-    def from_html(cls, element: HTMLElement, transform: str = ''):
-        styles_map = DocNode.get_styles_map()
+            if char not in anchors:
+                i += 1
+                continue
 
-        text: str = element.data.text if isinstance(element.data, Tag) else str(element.data)
-        styles: set[str] = element.styles
+            found = char
+            break
 
-        mapped_styles: set[str] = {styles_map[style] for style in styles}
+        return found
 
-        if transform and isinstance(element.data, Tag) and len(element.data.attrs):
-            transform_styles: dict[str, str] = cls.get_additional_styles(transform)
-            class_styles: set[str] = set(element.data.attrs.get('class', []))
-            extra_styles = {transform_styles[style] for style in class_styles if style in transform_styles}
-            mapped_styles.update(extra_styles)
+    def create_run(t: str, ts: set, ps: set) -> None:
+        results.append(DocRun(t, ts, ps))
 
-        return cls(mapped_styles, text)
+    def create_runs(texts: list[RichText]):
+        start_lookup, end_lookup, anchors = get_anchor_meta()
+
+        for rt in texts:
+            paragraph_styles: set[str] = rt.paragraph_styles
+            styles: set[str] = set()
+            text: str = rt.text
+
+            while anchor := can_split_on_style(text, anchors):
+                pre, post = text.split(anchor, 1)
+
+                if pre:
+                    create_run(pre, styles.copy(), paragraph_styles)
+
+                if anchor in start_lookup:
+                    name: str = start_lookup[anchor]
+                    styles.add(name)
+                elif anchor in end_lookup:
+                    name: str = end_lookup[anchor]
+                    styles.remove(name)
+                else:
+                    raise ValueError(f'Unknown anchor: {anchor}')
+
+                text = post
+
+            if text:
+                create_run(text + '\n', styles.copy(), paragraph_styles)
+
+    results: list[DocRun] = []
+
+    create_runs(document.texts)
+
+    return results
