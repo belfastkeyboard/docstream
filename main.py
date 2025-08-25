@@ -4,8 +4,6 @@ from plugin import load_plugins
 
 def main() -> None:
     url: str = 'https://www.marxists.org/archive/connolly/1908/06/harpb.htm'
-
-    # load plugins
     plugins: dict = load_plugins()
 
     pipeline(url, plugins=plugins, transform='marxists.org', output='docs')
