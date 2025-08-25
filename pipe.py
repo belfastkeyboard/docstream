@@ -8,7 +8,16 @@ import helper
 from google_docs import to_docs
 from wordpress import to_wordpress
 from normalise import normalisation_pipeline
-from generic import StructuredText
+from generic import RichTextDocument
+from typing import TypedDict
+
+
+class PipelineData(TypedDict):
+    title: str
+    publication: str
+    date: str
+    source: Any
+    document: RichTextDocument
 
 
 def _is_source_a_url(source) -> bool:
@@ -48,7 +57,7 @@ def _get_title_generic(content, **kwargs) -> str:
         raise TypeError(f'Unhandled type: {type(content)}')
 
 
-def _get_body_generic(content, **kwargs) -> Any:
+def _get_body_generic(content, **kwargs) -> Tag:
     if isinstance(content, BeautifulSoup):
         return soup.tree(content, **kwargs)
 
@@ -89,28 +98,30 @@ def _get_date_generic(content, transform: str = '', **kwargs) -> str:
         raise ValueError(f'{transform} not recognised')
 
 
-def _get_data(source, **kwargs) -> dict:
-    content = _do_get_data(source)
-    content = _transform_data(content, **kwargs)
+def _get_data(source, **kwargs) -> PipelineData:
+    source = _do_get_data(source)
+    content = _transform_data(source, **kwargs)
 
     title: str = _get_title_generic(content)
-    content: Any = _get_body_generic(content, **kwargs)
     publication: str = _get_publication_generic(content, **kwargs)
     date: str = _get_date_generic(content, **kwargs)
+    body: Any = _get_body_generic(content, **kwargs)
+    document: RichTextDocument = _adaptor(body)
 
     return {
         'title': title,
-        'content': content,
         'publication': publication,
-        'date': date
+        'date': date,
+        'document': document,
+        'source': source
     }
 
 
-def _get_normalisation(**kwargs) -> list[Callable]:
+def _get_normalisation(**kwargs) -> list[Callable[[RichTextDocument], None]]:
     return normalisation_pipeline(**kwargs)
 
 
-def _get_sender(output: str = 'docs', **kwargs) -> Callable:
+def _get_sender(output: str = 'docs', **kwargs) -> Callable[[...], None]:
     output = helper.destination(output)
 
     if output == 'docs':
@@ -121,9 +132,20 @@ def _get_sender(output: str = 'docs', **kwargs) -> Callable:
     raise ValueError(f'{output} not recognised')
 
 
-def _run_pipeline(content: Any, normalise: list[Callable]) -> None:
+def _adaptor(content: Any) -> RichTextDocument:
+    if isinstance(content, Tag):
+        doc = RichTextDocument.from_html(content)
+    else:
+        raise TypeError(f'{content} unhandled')
+
+    return doc
+
+
+def _run_pipeline(data: PipelineData, normalise: list[Callable[[RichTextDocument], None]]) -> None:
+    document: RichTextDocument = data['document']
+
     for func in normalise:
-        content = func(content)
+        func(document)
 
 
 def pipeline(source, **kwargs) -> None:
@@ -136,17 +158,10 @@ def pipeline(source, **kwargs) -> None:
     :return: None
     """
 
-    sender: Callable[[str, list], None] = _get_sender(**kwargs)
-    normalise: list[Callable] = _get_normalisation(**kwargs)
-    data: dict = _get_data(source, **kwargs)
-    content: Any = data.get('content', None)
+    sender: Callable[[...], str] = _get_sender(**kwargs)
+    normalise: list[Callable[[RichTextDocument], None]] = _get_normalisation(**kwargs)
+    data: PipelineData = _get_data(source, **kwargs)
 
-    lol = []
-    for x in content:
-        lol.append(StructuredText.from_html(x))
-
-    assert isinstance(content, Tag)
-
-    _run_pipeline(content, normalise)
+    _run_pipeline(data, normalise)
 
     sender(**data)

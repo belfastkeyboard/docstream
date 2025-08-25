@@ -1,13 +1,13 @@
 import os
 import pickle
+import re
+
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from dataclasses import dataclass
 from typing import Any
-from .type import DocNode
-from bs4 import Tag
-import soup
+from generic import RichText, RichTextDocument
 
 
 @dataclass
@@ -46,9 +46,7 @@ def send_requests_to_document(document: Document, requests: list[dict]) -> None:
     document.service.documents().batchUpdate(documentId=document.id, body={'requests': requests}).execute()
 
 
-def nodes_to_text_request(nodes: list[DocNode]) -> dict:
-    text: str = ''.join([node.text for node in nodes])
-
+def text_to_insert_request(text: str) -> dict:
     return {
         'insertText': {
             'location': {
@@ -59,42 +57,43 @@ def nodes_to_text_request(nodes: list[DocNode]) -> dict:
     }
 
 
-def node_to_style_request(node: DocNode, start: int, end: int) -> dict:
+def rt_to_style_request(rt: RichText, offset: int, requests: list[dict]) -> None:
     style_map: dict[str, dict] = {
         'italic': {'italic': True},
         'bold': {'bold': True}
     }
 
-    styles = set(node.styles)
-    rules = {}
+    for key, value in style_map.items():
+        start, end = RichText.get_anchor_chars(key)
+        pattern = re.compile(f'{re.escape(start)}(.*?){re.escape(end)}')
 
-    for style in styles:
-        if style in style_map:
-            rules.update(style_map[style])
+        while match := pattern.search(rt.text):
+            sub: str = match.group(1)
+            print(sub)
 
-    if not rules:
-        return {}
-    else:
-        return {
-            'updateTextStyle': {
-                'range': {
-                    'startIndex': start,
-                    'endIndex': end
+        # start = style.start + offset + 1
+        # end = style.end + offset + 1
+
+            requests.append({
+                'updateTextStyle': {
+                    'range': {
+                        'startIndex': start,
+                        'endIndex': end
+                    },
+                    'textStyle': value,
+                    'fields': key
                 },
-                'textStyle': rules,
-                'fields': ','.join([k for k in rules.keys()])
-            },
-        }
+            })
 
 
-def node_to_paragraph_request(node: DocNode, start: int, end: int) -> dict:
+def rt_to_paragraph_request(rt: RichText, offset: int, requests: list[dict]) -> None:
     para_map: dict[str, dict] = {
-        'HEADING_1': {'namedStyleType': 'HEADING_1'},
-        'HEADING_2': {'namedStyleType': 'HEADING_2'},
-        'HEADING_3': {'namedStyleType': 'HEADING_3'},
-        'HEADING_4': {'namedStyleType': 'HEADING_4'},
-        'HEADING_5': {'namedStyleType': 'HEADING_5'},
-        'HEADING_6': {'namedStyleType': 'HEADING_6'},
+        'heading1': {'namedStyleType': 'HEADING_1'},
+        'heading2': {'namedStyleType': 'HEADING_2'},
+        'heading3': {'namedStyleType': 'HEADING_3'},
+        'heading4': {'namedStyleType': 'HEADING_4'},
+        'heading5': {'namedStyleType': 'HEADING_5'},
+        'heading6': {'namedStyleType': 'HEADING_6'},
         'blockquote': {
             'indentStart': {'magnitude': 36, 'unit': 'PT'},
             'indentFirstLine': {'magnitude': 36, 'unit': 'PT'}
@@ -102,26 +101,27 @@ def node_to_paragraph_request(node: DocNode, start: int, end: int) -> dict:
         'align-right': {'alignment': 'END'}
     }
 
-    styles = set(node.styles)
-    rules = {}
+    styles = rt.paragraph_styles
 
     for style in styles:
-        if style in para_map:
-            rules.update(para_map[style])
+        rule: dict = para_map.get(style)
 
-    if not rules:
-        return {}
-    else:
-        return {
+        if not rule:
+            raise ValueError(f'{style} not recognised')
+
+        start = offset + 1
+        end = offset + len(rt.text) + 1
+
+        requests.append({
             'updateParagraphStyle': {
                 'range': {
                     'startIndex': start,
                     'endIndex': end
                 },
-                'paragraphStyle': rules,
-                'fields': ','.join([k for k in rules.keys()])
+                'paragraphStyle': rule,
+                'fields': ','.join([k for k in rule.keys()])
             }
-        }
+        })
 
 
 def build_setup_styles(end: int) -> list[dict]:
@@ -161,43 +161,30 @@ def build_setup_styles(end: int) -> list[dict]:
     return [para, text]
 
 
-def build_requests(nodes: list[DocNode]) -> list[dict]:
-    start = 1
-    end = start
-
+def build_requests(document: RichTextDocument) -> list[dict]:
+    offset: int = 1
+    text: str = ''
     style_requests: list[dict] = []
     paragraph_requests: list[dict] = []
 
-    for node in nodes:
-        if not node.text:
-            continue
+    for rt in document.texts:
+        if not rt.text:
+            raise ValueError('RichText cannot be empty')
 
-        end = start + len(node.text)
+        rt_to_style_request(rt, offset, style_requests)
+        rt_to_paragraph_request(rt, offset, paragraph_requests)
 
-        style_request: dict = node_to_style_request(node, start, end)
-        paragraph_request: dict = node_to_paragraph_request(node, start, end)
+        text += '\n' + rt.text if text else rt.text
+        offset = len(text) + 1
 
-        start = end
-
-        if style_request:
-            style_requests.append(style_request)
-
-        if paragraph_request:
-            paragraph_requests.append(paragraph_request)
-
-    text_request: dict = nodes_to_text_request(nodes)
-    setup_styles: list[dict] = build_setup_styles(end)
+    text_request: dict = text_to_insert_request(text)
+    setup_styles: list[dict] = build_setup_styles(offset)
 
     return [text_request] + setup_styles + style_requests + paragraph_requests
 
 
-def to_docs(content: Tag, title: str = '', **kwargs) -> None:
-    nodes: list[DocNode] = soup.nodes(content)
-    requests: list[dict] = build_requests(nodes)
-    document: Document = create_document(title)
+def to_docs(document: RichTextDocument, title: str = '', **kwargs) -> None:
+    requests: list[dict] = build_requests(document)
 
-    with open('file.txt', 'w') as f:
-        for node in nodes:
-            f.write(node.text)
-
+    # document: Document = create_document(title)
     # send_requests_to_document(document, requests)

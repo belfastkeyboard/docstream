@@ -1,10 +1,7 @@
 from typing import Callable
-from bs4 import Tag
-from bs4.element import NavigableString, PageElement, AttributeValueList
-import helper
-import re
+from generic import RichTextDocument, RichText
 
-
+"""
 def remove_empty(tree: Tag) -> Tag:
     def recursive_removal(element: PageElement) -> None:
         if isinstance(element, NavigableString):
@@ -55,19 +52,6 @@ def clean(tree: Tag) -> Tag:
             text = text.replace(old, new)
 
         child.replace_with(NavigableString(text))
-
-    return tree
-
-
-def remove_link(tree: Tag) -> Tag:
-    for link in tree.find_all('a'):
-        if not isinstance(link, Tag):
-            continue
-
-        parent: Tag = link.parent
-
-        if parent.name == 'p':
-            link.replace_with((NavigableString(link.text)))
 
     return tree
 
@@ -173,19 +157,61 @@ def get_source_normalisation(transform: str = '', **kwargs) -> list[Callable]:
         return marxists_normalisation()
 
     raise ValueError(f'{transform} not recognised')
+"""
 
 
-def normalisation_pipeline(**kwargs) -> list[Callable]:
-    generic = [
-        remove_link,
+def remove_empty(document: RichTextDocument) -> None:
+    document.texts = list(filter(lambda rt: rt.text, document.texts))
+
+
+def strip_whitespace(document: RichTextDocument) -> None:
+    for rt in document.texts:
+        rt.text = rt.text.strip()
+
+
+def clean(document: RichTextDocument) -> None:
+    table: dict[str, str] = {
+        '\r': '',
+        '“': '"',
+        '”': '"',
+        '’': '\'',
+        '‘': '\'',
+        '–': '—',
+        ' —': '—',
+        '— ': '—'
+    }
+
+    for rt in document.texts:
+        for old, new in table.items():
+            rt.text = rt.text.replace(old, new)
+
+
+def swap_italics_for_bold(document: RichTextDocument) -> None:
+    bold_start, bold_end = RichText.get_anchor_chars('bold')
+    italic_start, italic_end = RichText.get_anchor_chars('italic')
+    translation = str.maketrans(bold_start + bold_end, italic_start + italic_end)
+
+    for rt in document.get(text_style='bold'):
+        rt.text = rt.text.translate(translation)
+
+
+def normalisation_pipeline(**kwargs) -> list[Callable[[RichTextDocument], None]]:
+    """
         remove_newlines,
         strip_attributes,
         lambda c: swap(c, 'strong', 'em'),
         remove_empty,
         clean,
         invert_quotes
+    """
+
+    pipeline: list[Callable[[RichTextDocument], None]] = [
+        strip_whitespace,
+        remove_empty,
+        clean,
+        swap_italics_for_bold
     ]
 
-    extra = get_source_normalisation(**kwargs)
+    # extra = get_source_normalisation(**kwargs)
 
-    return generic + extra
+    return pipeline  # + extra

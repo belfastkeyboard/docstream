@@ -1,5 +1,4 @@
 from pipe import pipeline
-from plugin import load_plugins
 
 
 def main() -> None:
@@ -13,24 +12,17 @@ if __name__ == '__main__':
 
 """
     TODO:
-        PLUGIN ARCHITECTURE
-            i. create basic architecture
-            
         GENERIC TRANSFORM
-            i. actually do this
-            ii. integrate plugins
-    
-        HTML
-            i. invert nested quotes
+            i.     invert nested quotes
+            ii.    integrate plugins
     
         Google Docs
-            i. docs output formatting is broken
-            ii. seems to be the result of a normalisation function that strips all newlines 
+            i.      build 'runs' out of the document text
         
         WordPress 
-            i. infobox for wordpress
-            ii. author for wordpress (Editorial Team?)
-            iii. excerpt for wordpress
+            i.      infobox for wordpress
+            ii.     author for wordpress (Editorial Team?)
+            iii.    excerpt for wordpress
             
         inDesign
 """
