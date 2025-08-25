@@ -50,12 +50,15 @@ def get_auth_data() -> HTTPBasicAuth:
     return HTTPBasicAuth(name, pw)
 
 
-def to_wordpress(title: str, document: RichTextDocument, **kwargs) -> None:
+def to_wordpress(document: RichTextDocument, title: str = '', **kwargs) -> None:
     url: str = get_endpoint()
     content: BeautifulSoup = build_html_from_document(document)
     slug: str = generate_slug(title)
     data: dict = generate_rest_api_data(title, slug, str(content))
     auth: HTTPBasicAuth = get_auth_data()
 
-    status_code = send_post_to_wordpress(url, data, auth)
-    print(f'{"Success" if status_code == 201 else "Failure"}')
+    with open('file.txt', 'w') as f:
+        json.dump(data, f, indent=4)
+
+    # status_code = send_post_to_wordpress(url, data, auth)
+    # print(f'{"Success" if status_code == 201 else "Failure"}')
