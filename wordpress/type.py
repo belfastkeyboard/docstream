@@ -1,5 +1,5 @@
 from bs4 import Tag
-from bs4.element import NavigableString, PageElement
+from bs4.element import PageElement
 
 
 class WPNode:

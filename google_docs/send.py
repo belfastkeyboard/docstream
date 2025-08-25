@@ -1,12 +1,11 @@
 import os
 import pickle
-import re
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from dataclasses import dataclass
 from typing import Any
-from generic import RichText, RichTextDocument
+from generic import RichTextDocument
 from .type import adapt_from_rich_text, DocRun
 from google.auth.exceptions import RefreshError
 

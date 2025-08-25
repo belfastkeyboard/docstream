@@ -1,8 +1,4 @@
 from dataclasses import dataclass
-from bs4 import Tag
-from bs4.element import PageElement
-import helper
-from .style import marxists_style
 from generic import RichText, RichTextDocument
 
 
