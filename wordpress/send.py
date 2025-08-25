@@ -1,18 +1,15 @@
 import requests
+from bs4 import BeautifulSoup
 from requests.auth import HTTPBasicAuth
-from bs4 import BeautifulSoup, Tag
+from .build import build_html_from_document
 import json
 from string import punctuation
-from .type import WPNode
+from generic import RichTextDocument
 
 
 def send_post_to_wordpress(url: str, data: dict, auth: HTTPBasicAuth) -> int:
     response = requests.post(url, json=data, auth=auth)
     return response.status_code
-
-
-def stringify_content(nodes: list[WPNode]) -> str:
-    return '\n\n'.join([str(node) for node in nodes])
 
 
 def get_endpoint() -> str:
@@ -53,20 +50,12 @@ def get_auth_data() -> HTTPBasicAuth:
     return HTTPBasicAuth(name, pw)
 
 
-def generate_nodes_from_tree(tree: Tag) -> list[WPNode]:
-    return [WPNode(tag) for tag in tree.contents]
-
-
-def to_wordpress(title: str, content: BeautifulSoup, **kwargs) -> None:
+def to_wordpress(title: str, document: RichTextDocument, **kwargs) -> None:
     url: str = get_endpoint()
-    content: list[WPNode] = generate_nodes_from_tree(content)
-    content: str = stringify_content(content)
+    content: BeautifulSoup = build_html_from_document(document)
     slug: str = generate_slug(title)
-    data: dict = generate_rest_api_data(title, slug, content)
+    data: dict = generate_rest_api_data(title, slug, str(content))
     auth: HTTPBasicAuth = get_auth_data()
 
-    with open("file.txt", "w") as f:
-        f.write(content)
-
-    # status_code = send_post_to_wordpress(url, data, auth)
-    # print(f'{"Success" if status_code == 201 else "Failure"}')
+    status_code = send_post_to_wordpress(url, data, auth)
+    print(f'{"Success" if status_code == 201 else "Failure"}')

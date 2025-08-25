@@ -6,7 +6,7 @@ def main() -> None:
     url: str = 'https://www.marxists.org/archive/connolly/1908/06/harpb.htm'
     plugins: dict = load_plugins()
 
-    pipeline(url, plugins=plugins, transform='marxists.org', output='docs')
+    pipeline(url, plugins=plugins, transform='marxists.org', output='wordpress')
 
 
 if __name__ == '__main__':
@@ -14,9 +14,15 @@ if __name__ == '__main__':
 
 """
     TODO:
+        MISC
+            i.      replace marxists in transform.py with plugins
+    
         GENERIC TRANSFORM
             i.     invert nested quotes
             ii.    integrate plugins
+    
+        PLUGINS
+            i.      parameterised plugin loading
     
         Google Docs
             i.      build 'runs' out of the document text
