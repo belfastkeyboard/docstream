@@ -95,7 +95,8 @@ def run_to_paragraph_request(paragraph_styles: set[str], start: int, end: int, r
             'indentStart': {'magnitude': 36, 'unit': 'PT'},
             'indentFirstLine': {'magnitude': 36, 'unit': 'PT'}
         },
-        'align-right': {'alignment': 'END'}
+        'align-right': {'alignment': 'END'},
+        'align-centre': {'alignment': 'CENTER'}
     }
 
     paragraph_styles: dict = {

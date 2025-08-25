@@ -1,6 +1,6 @@
 from bs4.element import PageElement, NavigableString
 from bs4 import Tag
-from typing import Any
+from typing import Any, Callable
 
 
 class RichText:
@@ -171,8 +171,3 @@ class RichTextDocument:
                 to_remove.extend(not_found)
 
         return [rt for rt in texts if rt not in to_remove]
-
-
-"""
-    Consider using enums instead of text for safety
-"""

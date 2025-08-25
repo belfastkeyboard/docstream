@@ -8,7 +8,7 @@ import helper
 from google_docs import to_docs
 from wordpress import to_wordpress
 from normalise import normalisation_pipeline
-from generic import RichTextDocument
+from generic import RichTextDocument, RichText
 from typing import TypedDict
 
 
@@ -106,7 +106,7 @@ def _get_data(source, **kwargs) -> PipelineData:
     publication: str = _get_publication_generic(content, **kwargs)
     date: str = _get_date_generic(content, **kwargs)
     body: Any = _get_body_generic(content, **kwargs)
-    document: RichTextDocument = _adaptor(body)
+    document: RichTextDocument = _adaptor(body, **kwargs)
 
     return {
         'title': title,
@@ -132,11 +132,17 @@ def _get_sender(output: str = 'docs', **kwargs) -> Callable[[...], None]:
     raise ValueError(f'{output} not recognised')
 
 
-def _adaptor(content: Any) -> RichTextDocument:
+def _adaptor(content: Any, plugins: dict or None = None, **kwargs) -> RichTextDocument:
     if isinstance(content, Tag):
         doc = RichTextDocument.from_html(content)
     else:
         raise TypeError(f'{content} unhandled')
+
+    adaptor_plugins: list[Callable[[RichText], None]] = plugins.get('adaptor', []) if plugins else []
+
+    for rt in doc.texts:
+        for f in adaptor_plugins:
+            f(rt)
 
     return doc
 

@@ -1,10 +1,14 @@
 from pipe import pipeline
+from plugin import load_plugins
 
 
 def main() -> None:
     url: str = 'https://www.marxists.org/archive/connolly/1908/06/harpb.htm'
 
-    pipeline(url, transform='marxists.org', output='docs')
+    # load plugins
+    plugins: dict = load_plugins()
+
+    pipeline(url, plugins=plugins, transform='marxists.org', output='docs')
 
 
 if __name__ == '__main__':

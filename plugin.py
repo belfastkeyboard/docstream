@@ -2,7 +2,7 @@ import importlib
 import json
 
 
-def load_configs() -> dict:
+def _load_configs() -> dict:
     try:
         with open('plugins.json', 'r') as file:
             return json.load(file)
@@ -10,15 +10,18 @@ def load_configs() -> dict:
         return {}
 
 
-def load_plugins() -> list:
-    loaded = []
-    configs = load_configs()
+def load_plugins() -> dict:
+    loaded = {}
+    configs = _load_configs()
 
-    for module_name, function_names in configs.items():
-        module = importlib.import_module(f"plugins.{module_name}")
+    for namespace, dictionary in configs.items():
+        for module_name, function_names in dictionary.items():
+            module = importlib.import_module(f"plugins.{module_name}")
 
-        for function_name in function_names:
-            func = getattr(module, function_name)
-            loaded.append(func)
+            for function_name in function_names:
+                func = getattr(module, function_name)
+                functions = loaded.get(namespace, [])
+                functions.append(func)
+                loaded[namespace] = functions
 
     return loaded
