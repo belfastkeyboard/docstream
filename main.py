@@ -15,20 +15,17 @@ if __name__ == '__main__':
 """
     TODO:
         MISC
-            i.     replace marxists in transform.py with plugins
+            i.      replace marxists in transform.py with plugins
     
         GENERIC TRANSFORM
-            i.     invert nested quotes
-            ii.    integrate plugins
+            i.      invert nested quotes
     
         PLUGINS
             i.      parameterised plugin loading
     
         WordPress 
-            i.     proper title
-            ii.    excerpt
-            iii.   author (Editorial Team?)
-            iv.    infobox
+            i.      excerpt
+            ii.     infobox
             
         inDesign
 """
