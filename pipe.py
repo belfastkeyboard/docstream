@@ -4,12 +4,10 @@ from yarl import URL
 from typing import Any, Callable
 from bs4 import BeautifulSoup, Tag
 import helper
-from google_docs import to_docs
-from wordpress import to_wordpress
+from output import to_docs, to_docx, to_txt, to_wordpress
 from normalise import normalisation_pipeline
 from richtext import RichTextDocument, RichText
 from typing import TypedDict
-from txt import to_txt
 
 
 class PipelineData(TypedDict):
@@ -106,6 +104,8 @@ def _get_sender(output: str = 'docs', **kwargs) -> Callable[[...], None]:
 
     if output == 'docs':
         return to_docs
+    elif output == 'docx':
+        return to_docx
     elif output == 'wordpress':
         return to_wordpress
     elif output == 'txt':
@@ -140,7 +140,7 @@ def pipeline(source, **kwargs) -> None:
     """
     WIP
 
-    Simple way to chain together all the operations required to send to Google Docs
+    Simple way to chain together all the operations required to send to the output
 
     :param source: url
     :return: None

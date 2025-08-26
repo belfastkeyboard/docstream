@@ -6,7 +6,7 @@ def main() -> None:
     url: str = 'https://www.marxists.org/archive/connolly/1908/06/harpb.htm'
     plugins: dict = load_plugins()
 
-    pipeline(url, plugins=plugins, transform='marxists.org', output='txt')
+    pipeline(url, plugins=plugins, transform='marxists.org', output='docx')
 
 
 if __name__ == '__main__':

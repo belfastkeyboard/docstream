@@ -20,7 +20,7 @@ def destination(dest: str) -> str:
     """
 
     :param dest:
-    :return: docs, wordpress, 'txt
+    :return: docs, wordpress, txt, docx
     """
 
     dest = dest.lower()
@@ -32,7 +32,6 @@ def destination(dest: str) -> str:
         'googledocs': 'docs',
         'google_docs': 'docs',
         'google docs': 'docs',
-        'cartlann': 'wordpress',
         'wp': 'wordpress',
         'word press': 'wordpress',
         'word-press': 'wordpress',
@@ -42,6 +41,12 @@ def destination(dest: str) -> str:
         'text': 'txt',
         'text file': 'txt',
         'file': 'txt',
+        'word': 'docx',
+        'docx': 'docx',
+        'microsoft word': 'docx',
+        'microsoft-word': 'docx',
+        'ms word': 'docx',
+        'doc': 'docx'
     }
 
     return string_map[dest]
