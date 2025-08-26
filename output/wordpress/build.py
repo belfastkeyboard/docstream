@@ -5,12 +5,12 @@ from bs4.element import Comment, Tag
 
 
 def _get_child(tag_type: str, document: RichTextDocument) -> RichText | None:
-    if not _get_wrapper_class(tag_type) or not document.texts:
+    if not _get_wrapper_class(tag_type):
         return None
 
-    next_rt: RichText = document.texts[0]
+    next_rt: RichText = document.front()
 
-    if tag_type not in next_rt.paragraph_styles:
+    if not next_rt or tag_type not in next_rt.paragraph_styles:
         return None
 
     return document.pop()

@@ -6,7 +6,7 @@ from googleapiclient.discovery import build
 from dataclasses import dataclass
 from typing import Any
 from richtext import RichTextDocument
-from .type import adapt_from_rich_text, DocRun
+from docrun import adapt_from_rich_text, DocRun
 from google.auth.exceptions import RefreshError
 
 
@@ -214,7 +214,7 @@ def to_docs(document: RichTextDocument, metadata: dict | None = None, **kwargs) 
     publication: str = metadata['publication']
     date: str = metadata['date']
 
-    runs: list[DocRun] = adapt_from_rich_text(document)
+    runs: list[DocRun] = adapt_from_rich_text(document, add_newline=True)
     requests: list[dict] = build_requests(runs)
 
     document: Document = create_document(title)

@@ -197,3 +197,10 @@ class RichTextDocument:
             return None
 
         return self.texts.pop(0)
+
+    def front(self) -> RichText | None:
+        if not self.texts:
+            return None
+
+        return self.texts[0]
+
