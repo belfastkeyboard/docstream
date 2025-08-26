@@ -9,6 +9,7 @@ from wordpress import to_wordpress
 from normalise import normalisation_pipeline
 from richtext import RichTextDocument, RichText
 from typing import TypedDict
+from txt import to_txt
 
 
 class PipelineData(TypedDict):
@@ -107,6 +108,8 @@ def _get_sender(output: str = 'docs', **kwargs) -> Callable[[...], None]:
         return to_docs
     elif output == 'wordpress':
         return to_wordpress
+    elif output == 'txt':
+        return to_txt
 
     raise ValueError(f'{output} not recognised')
 

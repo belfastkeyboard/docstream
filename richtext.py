@@ -120,10 +120,15 @@ class RichText:
         return anchor in self.text
 
     def has_text(self, text: str) -> bool:
-        anchors: str = f'[{self.get_all_anchor_chars()}]'
-        stripped: str = re.sub(anchors, '', self.text)
+        return text in self.remove_anchors()
 
-        return text in stripped
+    def remove_anchors(self) -> str:
+        """ Returns a copy of the text with anchors removed """
+
+        anchors: str = self.get_all_anchor_chars()
+        pattern: str = f'[{anchors}]'
+
+        return re.sub(pattern, '', self.text)
 
 
 class RichTextDocument:
