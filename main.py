@@ -14,28 +14,18 @@ if __name__ == '__main__':
 
 """
     TODO:
-        MISC
-            i.      replace marxists in transform.py with plugins
-    
-        GENERIC TRANSFORM
-            i.      invert nested quotes
+        TRANSFORM
+            i.      split RichText on newlines
     
         PLUGINS
             i.      parameterised plugin loading
-            
             
         OUTPUT
     
             WordPress 
                 i.      improve excerpt
-                ii.     infobox
+                ii.     infobox (plugin)
                 
             inDesign
-            
-            .docx
-                i.      install lib
-                ii.     open document
-                iii.    dump to doc
-                iv.     create doc run (share with google docs?)
-                v.      formatted doc file
+                i.      research API
 """
