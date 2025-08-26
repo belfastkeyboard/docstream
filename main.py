@@ -32,9 +32,10 @@ if __name__ == '__main__':
                 
             inDesign
             
-            .txt
-                i.      strip anchors
-                ii.     dump
-            
             .docx
+                i.      install lib
+                ii.     open document
+                iii.    dump to doc
+                iv.     create doc run (share with google docs?)
+                v.      formatted doc file
 """
