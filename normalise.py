@@ -191,27 +191,22 @@ def swap_italics_for_bold(document: RichTextDocument) -> None:
     italic_start, italic_end = RichText.get_anchor_chars('italic')
     translation = str.maketrans(bold_start + bold_end, italic_start + italic_end)
 
-    for rt in document.get(text_style='bold'):
+    for rt in document.get(t_style='bold'):
         rt.text = rt.text.translate(translation)
 
 
-def normalisation_pipeline(**kwargs) -> list[Callable[[RichTextDocument], None]]:
-    """
-        remove_newlines,
-        strip_attributes,
-        lambda c: swap(c, 'strong', 'em'),
-        remove_empty,
-        clean,
-        invert_quotes
-    """
+def invert_quotations(document: RichTextDocument) -> None:
+    for rt in document.get(substr='"'):
+        rt.text = rt.text.replace('"', "'")
 
+
+def normalisation_pipeline(**kwargs) -> list[Callable[[RichTextDocument], None]]:
     pipeline: list[Callable[[RichTextDocument], None]] = [
         strip_whitespace,
         remove_empty,
         clean,
-        swap_italics_for_bold
+        swap_italics_for_bold,
+        invert_quotations
     ]
 
-    # extra = get_source_normalisation(**kwargs)
-
-    return pipeline  # + extra
+    return pipeline

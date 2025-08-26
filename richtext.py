@@ -1,6 +1,7 @@
 from bs4.element import PageElement, NavigableString
 from bs4 import Tag
 from typing import Any
+import re
 
 
 class RichText:
@@ -25,6 +26,10 @@ class RichText:
     @classmethod
     def get_anchor_chars(cls, style: str) -> tuple[str, str]:
         return cls.get_style_to_anchors_map()[style]
+
+    @classmethod
+    def get_all_anchor_chars(cls) -> str:
+        return ''.join([a for v in cls.get_style_to_anchors_map().values() for a in v])
 
     @classmethod
     def styled_text_from_html(cls, element: PageElement) -> str:
@@ -114,6 +119,12 @@ class RichText:
         anchor, _ = self.get_anchor_chars(style)
         return anchor in self.text
 
+    def has_text(self, text: str) -> bool:
+        anchors: str = f'[{self.get_all_anchor_chars()}]'
+        stripped: str = re.sub(anchors, '', self.text)
+
+        return text in stripped
+
 
 class RichTextDocument:
     def __init__(self, text: list[RichText]):
@@ -150,25 +161,29 @@ class RichTextDocument:
 
         return cls(results)
 
-    def get(self, paragraph_style: str | list[str] = '', text_style: str | list[str] = '') -> list[RichText]:
+    def get(self, p_style: str | list[str] = '', t_style: str | list[str] = '', substr: str = '') -> list[RichText]:
         texts: list[RichText] = self.texts
         to_remove: list[RichText] = []
 
-        if paragraph_style:
-            if isinstance(paragraph_style, str):
-                paragraph_style = [paragraph_style]
+        if p_style:
+            if isinstance(p_style, str):
+                p_style = [p_style]
 
-            for ps in paragraph_style:
+            for ps in p_style:
                 not_found = list(filter(lambda rt: not rt.has_paragraph_style(ps), texts))
                 to_remove.extend(not_found)
 
-        if text_style:
-            if isinstance(text_style, str):
-                text_style = [text_style]
+        if t_style:
+            if isinstance(t_style, str):
+                t_style = [t_style]
 
-            for ts in text_style:
+            for ts in t_style:
                 not_found = list(filter(lambda rt: not rt.has_text_style(ts), texts))
                 to_remove.extend(not_found)
+
+        if substr:
+            not_found = list(filter(lambda rt: not rt.has_text(substr), texts))
+            to_remove.extend(not_found)
 
         return [rt for rt in texts if rt not in to_remove]
 
