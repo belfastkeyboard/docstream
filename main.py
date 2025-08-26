@@ -22,10 +22,19 @@ if __name__ == '__main__':
     
         PLUGINS
             i.      parameterised plugin loading
-    
-        WordPress 
-            i.      excerpt
-            ii.     infobox
             
-        inDesign
+            
+        OUTPUT
+    
+            WordPress 
+                i.      improve excerpt
+                ii.     infobox
+                
+            inDesign
+            
+            .txt
+                i.      strip anchors
+                ii.     dump
+            
+            .docx
 """
