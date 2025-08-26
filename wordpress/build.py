@@ -1,5 +1,5 @@
 import re
-from generic import RichText, RichTextDocument
+from richtext import RichText, RichTextDocument
 from bs4 import BeautifulSoup
 from bs4.element import Comment, Tag
 

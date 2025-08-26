@@ -5,7 +5,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from dataclasses import dataclass
 from typing import Any
-from generic import RichTextDocument
+from richtext import RichTextDocument
 from .type import adapt_from_rich_text, DocRun
 from google.auth.exceptions import RefreshError
 

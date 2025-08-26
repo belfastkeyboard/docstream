@@ -7,7 +7,7 @@ import helper
 from google_docs import to_docs
 from wordpress import to_wordpress
 from normalise import normalisation_pipeline
-from generic import RichTextDocument, RichText
+from richtext import RichTextDocument, RichText
 from typing import TypedDict
 
 

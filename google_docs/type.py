@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from generic import RichText, RichTextDocument
+from richtext import RichText, RichTextDocument
 
 
 @dataclass

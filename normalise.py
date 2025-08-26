@@ -1,5 +1,5 @@
 from typing import Callable
-from generic import RichTextDocument, RichText
+from richtext import RichTextDocument, RichText
 
 """
 def remove_empty(tree: Tag) -> Tag:

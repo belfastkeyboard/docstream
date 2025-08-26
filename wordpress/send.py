@@ -4,7 +4,7 @@ from requests.auth import HTTPBasicAuth
 from .build import build_html_from_document
 import json
 from string import punctuation
-from generic import RichTextDocument
+from richtext import RichTextDocument
 
 
 def send_post_to_wordpress(url: str, author: int, data: dict, auth: HTTPBasicAuth) -> int:
