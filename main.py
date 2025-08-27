@@ -14,8 +14,11 @@ if __name__ == '__main__':
 
 """
     TODO:
-        TRANSFORM
-            i.      split RichText on newlines
+        
+        CLI
+            i.      look at the command line arguments API again
+            ii.     basic output handling
+            iii.    load plugins
     
         PLUGINS
             i.      parameterised plugin loading
@@ -28,4 +31,9 @@ if __name__ == '__main__':
                 
             inDesign
                 i.      research API
+                
+        INPUT
+        
+            OCR
+                i.      look into python libraries for OCR that might be better than my previous attempts
 """
