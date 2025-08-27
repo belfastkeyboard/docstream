@@ -16,10 +16,8 @@ if __name__ == '__main__':
     TODO:
     
         MISC
-            i.      separate PUA anchors from the RichText objects
-            ii.     offer some safety checks for the PUA anchors?
-            iii.    anchors for detected spelling errors     
-            iv.     anchors to indicate more formatting options (future)
+            i.    anchors for detected spelling errors     
+            ii.     anchors to indicate more formatting options (future)
         
         CLI
             i.      look at the command line arguments API again

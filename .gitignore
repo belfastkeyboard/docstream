@@ -3,7 +3,7 @@
 __pycache__/
 
 plugins/*
-dict/
+dict/*
 
 *.json
 *.txt

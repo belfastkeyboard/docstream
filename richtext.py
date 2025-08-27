@@ -1,7 +1,7 @@
 from bs4.element import PageElement, NavigableString
 from bs4 import Tag
 from typing import Any
-import re
+from anchors import wrap_text_in_style, remove_anchors, has_style
 
 
 class RichText:
@@ -12,30 +12,11 @@ class RichText:
 
     def __str__(self):
         text: str = self.text if len(self.text) < 60 else f'{self.text[:58]}...'
-        t_style: str = f'[{", ".join([style for style in self.styles()])}]'
         p_style: str = f'[{", ".join([style for style in self.paragraph_styles])}]'
-        return f'Text: "{text}" Text Styles: {t_style} Paragraph Style: {p_style}'
-
-    @classmethod
-    def get_style_to_anchors_map(cls) -> dict[str, tuple[str, str]]:
-        return {
-            'italic': ('\uE000', '\uE001'),
-            'bold': ('\uE002', '\uE003')
-        }
-
-    @classmethod
-    def get_anchor_chars(cls, style: str) -> tuple[str, str]:
-        return cls.get_style_to_anchors_map()[style]
-
-    @classmethod
-    def get_all_anchor_chars(cls) -> str:
-        return ''.join([a for v in cls.get_style_to_anchors_map().values() for a in v])
+        return f'Text: "{text}" Paragraph Styles: {p_style}'
 
     @classmethod
     def styled_text_from_html(cls, element: PageElement) -> str:
-        if not isinstance(element, Tag) and not isinstance(element, NavigableString):
-            raise TypeError(element)
-
         style_map: dict[str, str] = {
             'em': 'italic',
             'i': 'italic',
@@ -47,31 +28,15 @@ class RichText:
 
         if isinstance(element, Tag):
             for child in element.contents:
-                if not isinstance(child, Tag) and not isinstance(child, NavigableString):
-                    raise TypeError(str(child))
-
                 if isinstance(child, Tag) and child.name in style_map:
                     type_name: str = style_map[child.name]
-                    start, end = cls.get_anchor_chars(type_name)
-
-                    run = f'{start}{child.text}{end}'
+                    run = wrap_text_in_style(child.text, type_name)
                 else:
                     run = child.text
 
                 text += run
 
         return text
-
-    @classmethod
-    def from_html(cls, element: PageElement, parent_styles: set[str] | None = None):
-        text = cls.styled_text_from_html(element)
-        paragraph_styles: set[str] = cls.paragraph_styles_from_html(element, parent_styles)
-
-        return cls(element, text, paragraph_styles)
-
-    @staticmethod
-    def insert_anchor(text: str, anchor: str, index: int):
-        return text[:index] + anchor + text[index:]
 
     @staticmethod
     def paragraph_styles_from_html(element: PageElement, parent_styles: set[str] | None) -> set[str]:
@@ -101,34 +66,21 @@ class RichText:
 
         return styles
 
-    def styles(self) -> set[str]:
-        styles: set[str] = set()
+    @classmethod
+    def from_html(cls, element: PageElement, parent_styles: set[str] | None = None):
+        text = cls.styled_text_from_html(element)
+        paragraph_styles: set[str] = cls.paragraph_styles_from_html(element, parent_styles)
 
-        for style in self.get_style_to_anchors_map().keys():
-            anchor, _ = self.get_anchor_chars(style)
+        return cls(element, text, paragraph_styles)
 
-            if anchor in self.text:
-                styles.add(style)
-
-        return styles
+    def has_text_style(self, style: str) -> bool:
+        return has_style(self.text, style)
 
     def has_paragraph_style(self, style: str) -> bool:
         return style in self.paragraph_styles
 
-    def has_text_style(self, style: str) -> bool:
-        anchor, _ = self.get_anchor_chars(style)
-        return anchor in self.text
-
     def has_text(self, text: str) -> bool:
-        return text in self.remove_anchors()
-
-    def remove_anchors(self) -> str:
-        """ Returns a copy of the text with anchors removed """
-
-        anchors: str = self.get_all_anchor_chars()
-        pattern: str = f'[{anchors}]'
-
-        return re.sub(pattern, '', self.text)
+        return text in remove_anchors(self.text)
 
 
 class RichTextDocument:
