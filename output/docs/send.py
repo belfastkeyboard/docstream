@@ -214,7 +214,7 @@ def to_docs(document: RichTextDocument, metadata: dict | None = None, **kwargs) 
     publication: str = metadata['publication']
     date: str = metadata['date']
 
-    runs: list[DocRun] = adapt_from_rich_text(document, add_newline=True)
+    runs: list[DocRun] = adapt_from_rich_text(document)
     requests: list[dict] = build_requests(runs)
 
     document: Document = create_document(title)

@@ -1,11 +1,12 @@
 from richtext import RichTextDocument
+from anchors import remove_anchors
 
 
 def build_text(document: RichTextDocument) -> str:
     stripped_text: list[str] = []
 
     for rt in document.texts:
-        st: str = rt.remove_anchors()
+        st: str = remove_anchors(rt.text)
         stripped_text.append(st)
 
     return '\n'.join(stripped_text)

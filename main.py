@@ -15,8 +15,14 @@ if __name__ == '__main__':
 """
     TODO:
     
+        REBUILD
+            i.      google config
+            ii.     wordpress config
+            iii.    my specific plugins
+            iv.     BACK THEM UP
+    
         MISC
-            i.    anchors for detected spelling errors     
+            i.      anchors for detected spelling errors     
             ii.     anchors to indicate more formatting options (future)
         
         CLI

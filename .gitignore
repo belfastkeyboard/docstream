@@ -11,3 +11,5 @@ dict/*
 
 .cache
 token.pickle
+
+!requirements.txt

@@ -56,7 +56,7 @@ class RichText:
                 'blockquote': 'blockquote'
             }
 
-            ignore: set[str] = {'body', 'p'}
+            ignore: set[str] = {'body', 'p', 'hr'}
 
             if element.name not in ignore:
                 styles.add(style_map[element.name])
