@@ -5,6 +5,7 @@ plugins/
 
 *.json
 *.txt
+*.docx
 
 .cache
 token.pickle
