@@ -1,7 +1,9 @@
 .idea/
 .venv/
 __pycache__/
-plugins/
+
+plugins/*
+dict/
 
 *.json
 *.txt
