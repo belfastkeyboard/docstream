@@ -1,14 +1,14 @@
 import requests
 from time import sleep
 from threading import Lock
-from cache import store_cache, check_cache
 from bs4 import BeautifulSoup
+from .cache import store_cache, check_cache
 
 
 lock = Lock()
 
 
-def _make_request(url: str, retry=3, delay=1, timeout=30) -> bytes | None:
+def make_request(url: str, retry=3, delay=1, timeout=30) -> bytes | None:
     with lock:
         sleep(5)
 
@@ -28,13 +28,13 @@ def _make_request(url: str, retry=3, delay=1, timeout=30) -> bytes | None:
     return None
 
 
-def _do_fetch(url: str) -> bytes:
+def do_fetch(url: str) -> bytes:
     result: bytes = check_cache(url)
 
     if result:
         return result
 
-    result = _make_request(url)
+    result = make_request(url)
 
     if result:
         store_cache(url, result)
@@ -43,8 +43,8 @@ def _do_fetch(url: str) -> bytes:
     return b''
 
 
-def url_content(url: str) -> BeautifulSoup:
-    result: bytes = _do_fetch(url)
+def fetch_url_content(url: str) -> BeautifulSoup:
+    result: bytes = do_fetch(url)
 
     soup = BeautifulSoup(result, 'html.parser')
 

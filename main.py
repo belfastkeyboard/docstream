@@ -36,4 +36,6 @@ if __name__ == '__main__':
         
             OCR
                 i.      look into python libraries for OCR that might be better than my previous attempts
+                
+        SPELLCHECK
 """
