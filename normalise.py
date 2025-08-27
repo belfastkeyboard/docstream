@@ -200,13 +200,29 @@ def invert_quotations(document: RichTextDocument) -> None:
         rt.text = rt.text.replace('"', "'")
 
 
+def split_on_newlines(document: RichTextDocument) -> None:
+    new_texts: list[RichText] = []
+
+    for rt in document.texts:
+        if '\n' not in rt.text:
+            new_texts.append(rt)
+        else:
+            split: list[str] = rt.text.split('\n')
+
+            for s in split:
+                new_texts.append(RichText(rt.src, s, rt.paragraph_styles))
+
+    document.texts = new_texts
+
+
 def normalisation_pipeline(**kwargs) -> list[Callable[[RichTextDocument], None]]:
     pipeline: list[Callable[[RichTextDocument], None]] = [
         strip_whitespace,
         remove_empty,
         clean,
         swap_italics_for_bold,
-        invert_quotations
+        invert_quotations,
+        split_on_newlines
     ]
 
     return pipeline

@@ -1,5 +1,5 @@
 import fetch
-import soup
+import HTML
 from yarl import URL
 from typing import Any, Callable
 from bs4 import BeautifulSoup, Tag
@@ -39,7 +39,7 @@ def _get_source_type(source) -> str:
 
 def _get_body_generic(content, **kwargs) -> Tag:
     if isinstance(content, BeautifulSoup):
-        return soup.tree(content, **kwargs)
+        return HTML.tree(content, **kwargs)
 
     raise TypeError(f'Unhandled type: {type(content)}')
 
