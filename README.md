@@ -1,16 +1,17 @@
 # Plugins
 
-1. Modify source
-
 JSON example:
 ```
 {
     "modify-source": {
-        "filename": ["function_name", "another_function"]
+        "filename": ["function", "another_function"]
     },
     "adaptor": {
-        "filename": ["function_name", "another_function"]
+        "filename": ["function", "another_function"]
     },
+    "metadata": {
+        "filename": ["function", "another_function"]
+    }
 }
 ```
 
@@ -21,3 +22,7 @@ JSON example:
 ### adaptor
 
 `def name(document: RichTextDocument) -> None:`
+
+### metadata
+
+`def name(ent: Any, meta: dict[str, str]) -> None:`
