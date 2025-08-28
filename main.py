@@ -16,10 +16,8 @@ if __name__ == '__main__':
     TODO:
     
         REBUILD
-            i.      google config
-            ii.     wordpress config
-            iii.    my specific plugins
-            iv.     BACK THEM UP
+            i.    my specific plugins
+            ii.   BACK THEM UP
     
         MISC
             i.      anchors for detected spelling errors     

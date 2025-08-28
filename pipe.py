@@ -4,6 +4,7 @@ from output import to_docs, to_docx, to_txt, to_wordpress
 from normalise import normalisation_pipeline
 from richtext import RichTextDocument
 from input import PipelineData, get_pipeline_data
+from spellcheck import spellcheck_document
 
 
 def _get_normalisation(**kwargs) -> list[Callable[[RichTextDocument], None]]:
