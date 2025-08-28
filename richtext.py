@@ -1,6 +1,6 @@
 from bs4.element import PageElement, NavigableString
 from bs4 import Tag
-from typing import Any
+from typing import Any, Callable
 from anchors import wrap_text_in_style, remove_anchors, has_style
 
 
@@ -118,31 +118,40 @@ class RichTextDocument:
 
         return cls(results)
 
-    def get(self, p_style: str | list[str] = '', t_style: str | list[str] = '', substr: str = '') -> list[RichText]:
+    def get(self,
+            paragraph_style: str | list[str] = '',
+            text_style: str | list[str] = '',
+            source: Callable[[Any], bool] | None = None,
+            substr: str = '') -> list[RichText]:
+
         texts: list[RichText] = self.texts
-        to_remove: list[RichText] = []
+        results: list[RichText] = []
 
-        if p_style:
-            if isinstance(p_style, str):
-                p_style = [p_style]
+        if paragraph_style:
+            if isinstance(paragraph_style, str):
+                paragraph_style = [paragraph_style]
 
-            for ps in p_style:
-                not_found = list(filter(lambda rt: not rt.has_paragraph_style(ps), texts))
-                to_remove.extend(not_found)
+            for ps in paragraph_style:
+                found = list(filter(lambda rt: rt.has_paragraph_style(ps), texts))
+                results.extend(found)
 
-        if t_style:
-            if isinstance(t_style, str):
-                t_style = [t_style]
+        if text_style:
+            if isinstance(text_style, str):
+                text_style = [text_style]
 
-            for ts in t_style:
-                not_found = list(filter(lambda rt: not rt.has_text_style(ts), texts))
-                to_remove.extend(not_found)
+            for ts in text_style:
+                found = list(filter(lambda rt: rt.has_text_style(ts), texts))
+                results.extend(found)
 
         if substr:
-            not_found = list(filter(lambda rt: not rt.has_text(substr), texts))
-            to_remove.extend(not_found)
+            found = list(filter(lambda rt: rt.has_text(substr), texts))
+            results.extend(found)
 
-        return [rt for rt in texts if rt not in to_remove]
+        if source:
+            found = list(filter(lambda rt: source(rt), texts))
+            results.extend(found)
+
+        return results
 
     def pop(self) -> RichText | None:
         if not self.texts:

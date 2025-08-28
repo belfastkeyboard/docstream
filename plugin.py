@@ -1,5 +1,6 @@
 import importlib
 import json
+from pathlib import Path
 
 
 def _load_configs() -> dict:
@@ -13,6 +14,9 @@ def _load_configs() -> dict:
 def load_plugins() -> dict:
     loaded = {}
     configs = _load_configs()
+
+    if configs:
+        Path('plugins').mkdir(exist_ok=True)
 
     for namespace, dictionary in configs.items():
         for module_name, function_names in dictionary.items():

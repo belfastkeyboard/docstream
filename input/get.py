@@ -47,8 +47,8 @@ def modify_source(content, plugins: dict | None = None, **kwargs) -> Any:
     if not plugins or not plugins.get('modify-source'):
         return content
     else:
-        _modify = plugins.get('modify-source')[0]
-        content = _modify(content, **kwargs)
+        for _modify in plugins.get('modify-source'):
+            content = _modify(content, **kwargs)
 
     return content
 
@@ -66,31 +66,30 @@ def adaptor(content: Any, plugins: dict or None = None, **kwargs) -> RichTextDoc
     else:
         raise TypeError(f'{content} unhandled')
 
-    adaptor_plugins: list[Callable[[RichText], None]] = plugins.get('adaptor', []) if plugins else []
+    adaptor_plugins: list[Callable[[RichTextDocument], None]] = plugins.get('adaptor', []) if plugins else []
 
-    for rt in doc.texts:
-        for f in adaptor_plugins:
-            f(rt)
+    for f in adaptor_plugins:
+        f(doc)
 
     return doc
 
 
-def get_metadata_generic(content, **kwargs) -> tuple[str, str, str]:
-    return '', '', ''
+def get_metadata_generic(content, metadata: dict[str, str]) -> None:
+    metadata['title'] = ''
+    metadata['publication'] = ''
+    metadata['date'] = ''
 
 
 def get_metadata(content: Any, plugins: dict | None = None, **kwargs) -> dict[str, str]:
-    if not plugins or not plugins.get('meta'):
-        title, publication, date = get_metadata_generic(content, **kwargs)
-    else:
-        _get_meta = plugins.get('meta')[0]
-        title, publication, date = _get_meta(content, **kwargs)
+    metadata: dict[str, str] = {}
 
-    return {
-        'title': title,
-        'publication': publication,
-        'date': date
-    }
+    if not plugins or not plugins.get('metadata'):
+        get_metadata_generic(content, metadata)
+    else:
+        for _get_meta in plugins.get('metadata'):
+            _get_meta(content, metadata)
+
+    return metadata
 
 
 def get_pipeline_data(source, **kwargs) -> PipelineData:

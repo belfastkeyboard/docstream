@@ -34,7 +34,7 @@ def swap_italics_for_bold(document: RichTextDocument) -> None:
     italic_start, italic_end = get_style_anchors('italic')
     translation = str.maketrans(bold_start + bold_end, italic_start + italic_end)
 
-    for rt in document.get(t_style='bold'):
+    for rt in document.get(text_style='bold'):
         rt.text = rt.text.translate(translation)
 
 

@@ -15,13 +15,10 @@ if __name__ == '__main__':
 """
     TODO:
     
-        REBUILD
-            i.    my specific plugins
-            ii.   BACK THEM UP
-    
         MISC
             i.      anchors for detected spelling errors     
-            ii.     anchors to indicate more formatting options (future)
+            ii.     pull metadata from source -> remove unwanted elements from source -> in that order
+            iii.    anchors to indicate more formatting options (future)
         
         CLI
             i.      look at the command line arguments API again
@@ -46,4 +43,7 @@ if __name__ == '__main__':
                 i.      look into python libraries for OCR that might be better than my previous attempts
                 
         SPELLCHECK
+        
+            i.  options to disable certain types of checking
+            ii. group options into some sort of archetype like 'OCR'
 """
