@@ -20,7 +20,7 @@ def destination(dest: str) -> str:
     """
 
     :param dest:
-    :return: docs, wordpress, txt, docx
+    :return: docs, wordpress, txt, docx, idml
     """
 
     dest = dest.lower()
@@ -46,7 +46,14 @@ def destination(dest: str) -> str:
         'microsoft word': 'docx',
         'microsoft-word': 'docx',
         'ms word': 'docx',
-        'doc': 'docx'
+        'doc': 'docx',
+        'idml': 'idml',
+        'indesign': 'idml',
+        'in design': 'idml',
+        'indesign markup': 'idml',
+        'indesign mark up': 'idml',
+        'indesign file': 'idml',
+        'pdf': 'idml'
     }
 
     return string_map[dest]

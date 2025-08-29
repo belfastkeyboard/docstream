@@ -1,10 +1,9 @@
 from typing import Callable
 import helper
-from output import to_docs, to_docx, to_txt, to_wordpress
+from output import to_docs, to_docx, to_idml, to_txt, to_wordpress
 from normalise import normalisation_pipeline
 from richtext import RichTextDocument
 from input import PipelineData, get_pipeline_data
-from spellcheck import spellcheck_document
 
 
 def _get_normalisation(**kwargs) -> list[Callable[[RichTextDocument], None]]:
@@ -22,6 +21,8 @@ def _get_sender(output: str = 'docs', **kwargs) -> Callable[[...], None]:
         return to_wordpress
     elif output == 'txt':
         return to_txt
+    elif output == 'idml':
+        return to_idml
 
     raise ValueError(f'{output} not recognised')
 

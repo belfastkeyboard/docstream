@@ -1,6 +1,7 @@
 .idea/
 .venv/
 __pycache__/
+output/idml/working_dir
 
 plugins/*
 dict/*
@@ -8,6 +9,7 @@ dict/*
 *.json
 *.txt
 *.docx
+*.idml
 
 .cache
 token.pickle

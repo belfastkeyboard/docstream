@@ -6,7 +6,7 @@ def main() -> None:
     url: str = 'https://www.marxists.org/archive/connolly/1908/06/harpb.htm'
     plugins: dict = load_plugins()
 
-    pipeline(url, plugins=plugins, transform='marxists.org', output='docx')
+    pipeline(url, plugins=plugins, transform='marxists.org', output='idml')
 
 
 if __name__ == '__main__':
@@ -16,9 +16,10 @@ if __name__ == '__main__':
     TODO:
     
         MISC
-            i.      anchors for detected spelling errors     
-            ii.     pull metadata from source -> remove unwanted elements from source -> in that order
+            i.     pull metadata from source -> remove unwanted elements from source -> in that order
+            ii.      anchors for detected spelling errors     
             iii.    anchors to indicate more formatting options (future)
+            iv.     textacy might be able to improve text processing pipeline instead of custom functions
         
         CLI
             i.      look at the command line arguments API again
@@ -33,9 +34,6 @@ if __name__ == '__main__':
             WordPress 
                 i.      improve excerpt
                 ii.     infobox (plugin)
-                
-            inDesign
-                i.      research API
                 
         INPUT
         
