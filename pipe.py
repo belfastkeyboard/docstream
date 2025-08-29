@@ -11,20 +11,17 @@ def _get_normalisation(**kwargs) -> list[Callable[[RichTextDocument], None]]:
 
 
 def _get_sender(output: str = 'docs', **kwargs) -> Callable[[...], None]:
+    senders: dict[str, Callable[[...], None]] = {
+        'docs': to_docs,
+        'docx': to_docx,
+        'wordpress': to_wordpress,
+        'txt': to_txt,
+        'idml': to_idml
+    }
+
     output = helper.destination(output)
 
-    if output == 'docs':
-        return to_docs
-    elif output == 'docx':
-        return to_docx
-    elif output == 'wordpress':
-        return to_wordpress
-    elif output == 'txt':
-        return to_txt
-    elif output == 'idml':
-        return to_idml
-
-    raise ValueError(f'{output} not recognised')
+    return senders[output]
 
 
 def _run_pipeline(data: PipelineData, normalise: list[Callable[[RichTextDocument], None]]) -> None:
