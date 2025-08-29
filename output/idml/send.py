@@ -192,6 +192,7 @@ def write_info(publication: str, date: str) -> None:
     write_run(paragraph, f', {date.year}.', Tracking="25")
 
     write_break(paragraph)
+    write_break(paragraph)
 
     write_xml(file, tree)
 

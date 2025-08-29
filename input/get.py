@@ -94,10 +94,10 @@ def get_metadata(content: Any, plugins: dict | None = None, **kwargs) -> dict[st
 
 def get_pipeline_data(source, **kwargs) -> PipelineData:
     source = do_get_data(source)
+    metadata: dict[str, str] = get_metadata(source, **kwargs)
     content = modify_source(source, **kwargs)
     body: Any = get_body_generic(content, **kwargs)
     document: RichTextDocument = adaptor(body, **kwargs)
-    metadata: dict[str, str] = get_metadata(content, **kwargs)
 
     return {
         'document': document,

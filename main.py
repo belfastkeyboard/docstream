@@ -16,8 +16,8 @@ if __name__ == '__main__':
     TODO:
     
         MISC
-            i.     pull metadata from source -> remove unwanted elements from source -> in that order
-            ii.      anchors for detected spelling errors     
+            i.      pull metadata from source -> remove unwanted elements from source -> in that order
+            ii.     anchors for detected spelling errors     
             iii.    anchors to indicate more formatting options (future)
             iv.     textacy might be able to improve text processing pipeline instead of custom functions
         
@@ -34,6 +34,9 @@ if __name__ == '__main__':
             WordPress 
                 i.      improve excerpt
                 ii.     infobox (plugin)
+                
+            inDesign
+                i.      is it possible to convert .idml to .indd ?
                 
         INPUT
         
