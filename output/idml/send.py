@@ -27,18 +27,6 @@ def repack_idml(title: str) -> None:
                 zf.write(full_path, rel_path)
 
 
-def read_xml(file: Path) -> etree:
-    parser = etree.XMLParser(remove_blank_text=True)
-    return etree.parse(file, parser)
-
-
-def write_xml(file: Path, tree) -> None:
-    tree.write(file,
-               encoding="utf-8",
-               xml_declaration=True,
-               pretty_print=True)
-
-
 def extract_idml() -> Path:
     work_dir: Path = WORK_DIR
 
@@ -56,6 +44,18 @@ def extract_idml() -> Path:
         z.extractall(work_dir)
 
     return work_dir
+
+
+def read_xml(file: Path) -> etree:
+    parser = etree.XMLParser(remove_blank_text=True)
+    return etree.parse(file, parser)
+
+
+def write_xml(file: Path, tree) -> None:
+    tree.write(file,
+               encoding="utf-8",
+               xml_declaration=True,
+               pretty_print=True)
 
 
 def write_title(title: str) -> None:
@@ -143,14 +143,11 @@ def handle_quotes(text: str) -> str:
     return text
 
 
-def write_run(paragraph, text: str, start_break: bool = False, end_break: bool = False, **kwargs) -> None:
+def write_run(paragraph, text: str, **kwargs) -> None:
     char_style = SubElement(paragraph,
                             "CharacterStyleRange",
                             AppliedCharacterStyle="CharacterStyle/$ID/[No character style]",
                             **kwargs)
-
-    if start_break:
-        write_break(char_style)
 
     content = SubElement(char_style, 'Content')
 
@@ -158,9 +155,6 @@ def write_run(paragraph, text: str, start_break: bool = False, end_break: bool =
         text = handle_quotes(text)
 
     content.text = text
-
-    if end_break:
-        write_break(char_style)
 
 
 def write_break(paragraph) -> None:
