@@ -3,14 +3,17 @@ from yarl import URL
 from bs4 import BeautifulSoup, Tag
 from .fetch import fetch_url_content
 from .html import get_html_body
-from richtext import RichText, RichTextDocument
+from richtext import RichTextDocument
 from typing import TypedDict
+
+
+Metadata = dict[str, str]
 
 
 class PipelineData(TypedDict):
     source: Any
     document: RichTextDocument
-    metadata: dict[str, str]
+    metadata: Metadata
 
 
 def is_source_a_url(source) -> bool:
@@ -47,20 +50,20 @@ def modify_source(content, plugins: dict | None = None, **kwargs) -> Any:
     if not plugins or not plugins.get('modify-source'):
         return content
     else:
-        for _modify in plugins.get('modify-source'):
-            content = _modify(content, **kwargs)
+        for modify in plugins.get('modify-source'):
+            content = modify(content, **kwargs)
 
     return content
 
 
-def get_body_generic(content, **kwargs) -> Tag:
+def get_body_generic(content) -> Tag:
     if isinstance(content, BeautifulSoup):
-        return get_html_body(content, **kwargs)
+        return get_html_body(content)
 
     raise TypeError(f'Unhandled type: {type(content)}')
 
 
-def adaptor(content: Any, plugins: dict or None = None, **kwargs) -> RichTextDocument:
+def adaptor(content: Any, plugins: dict or None = None) -> RichTextDocument:
     if isinstance(content, Tag):
         doc = RichTextDocument.from_html(content)
     else:
@@ -74,30 +77,30 @@ def adaptor(content: Any, plugins: dict or None = None, **kwargs) -> RichTextDoc
     return doc
 
 
-def get_metadata_generic(content, metadata: dict[str, str]) -> None:
+def get_metadata_generic(metadata: dict[str, str]) -> None:
     metadata['title'] = ''
     metadata['publication'] = ''
     metadata['date'] = ''
 
 
-def get_metadata(content: Any, plugins: dict | None = None, **kwargs) -> dict[str, str]:
+def get_metadata(content: Any, plugins: dict | None = None) -> dict[str, str]:
     metadata: dict[str, str] = {}
 
     if not plugins or not plugins.get('metadata'):
-        get_metadata_generic(content, metadata)
+        get_metadata_generic(metadata)
     else:
-        for _get_meta in plugins.get('metadata'):
-            _get_meta(content, metadata)
+        for get_meta in plugins.get('metadata'):
+            get_meta(content, metadata)
 
     return metadata
 
 
-def get_pipeline_data(source, **kwargs) -> PipelineData:
+def get_pipeline_data(source, plugins) -> PipelineData:
     source = do_get_data(source)
-    metadata: dict[str, str] = get_metadata(source, **kwargs)
-    content = modify_source(source, **kwargs)
-    body: Any = get_body_generic(content, **kwargs)
-    document: RichTextDocument = adaptor(body, **kwargs)
+    metadata: dict[str, str] = get_metadata(source, plugins)
+    content = modify_source(source, plugins)
+    body: Any = get_body_generic(content)
+    document: RichTextDocument = adaptor(body, plugins)
 
     return {
         'document': document,

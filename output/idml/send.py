@@ -9,6 +9,7 @@ import os
 from .date import Date, get_formatted_date
 from docrun import DocPara, adapt_into_paragraphs_from_rich_text
 import re
+from input import Metadata
 
 
 IDML_DIR = Path('output', 'idml')
@@ -16,14 +17,16 @@ WORK_DIR = Path(IDML_DIR, 'working_dir')
 
 
 def repack_idml(title: str) -> None:
-    folder_path = WORK_DIR
-    output_file = Path(f'{title}.idml')
+    work_dir = WORK_DIR
+    directory = Path('export')
+    output_file = Path(directory, f'{title}.idml')
+    directory.mkdir(exist_ok=True)
 
     with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for root, dirs, files in os.walk(folder_path):
+        for root, dirs, files in os.walk(work_dir):
             for file in files:
                 full_path = os.path.join(root, file)
-                rel_path = os.path.relpath(full_path, folder_path)
+                rel_path = os.path.relpath(full_path, work_dir)
                 zf.write(full_path, rel_path)
 
 
@@ -214,7 +217,7 @@ def write_document(paragraphs: list[DocPara]) -> None:
     write_xml(file, tree)
 
 
-def to_idml(document: RichTextDocument, metadata: dict | None = None, **kwargs) -> None:
+def to_idml(document: RichTextDocument, metadata: Metadata) -> None:
     extract_idml()
 
     title: str = metadata.get('title', '')

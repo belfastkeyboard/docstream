@@ -3,7 +3,9 @@ from docx import Document
 from docx.text.paragraph import Paragraph
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, RGBColor
+from pathlib import Path
 from docrun import DocRun, DocPara, adapt_into_paragraphs_from_rich_text
+from input import Metadata
 
 
 def is_heading(doc_para: DocPara) -> bool:
@@ -123,12 +125,13 @@ def set_document_styles(doc: Document) -> None:
         style.font.color.rgb = RGBColor(0, 0, 0)
 
 
-def to_docx(document: RichTextDocument, metadata: dict | None = None, **kwargs) -> None:
+def to_docx(document: RichTextDocument, metadata: Metadata) -> None:
     title: str = metadata['title']
     publication: str = metadata['publication']
     date: str = metadata['date']
 
-    fn: str = f'{title}.docx'
+    directory = Path('export')
+    fn = Path(directory, f'{title}.docx')
     paragraphs: list[DocPara] = adapt_into_paragraphs_from_rich_text(document)
 
     doc = Document()
@@ -136,4 +139,6 @@ def to_docx(document: RichTextDocument, metadata: dict | None = None, **kwargs) 
     set_document_styles(doc)
     handle_paragraphs(paragraphs, doc)
 
-    doc.save(fn)
+    directory.mkdir(exist_ok=True)
+
+    doc.save(str(fn))

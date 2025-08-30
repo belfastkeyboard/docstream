@@ -30,5 +30,5 @@ def metadata(soup: BeautifulSoup) -> dict[str, str]:
     return result
 
 
-def get_html_body(soup: BeautifulSoup, **kwargs) -> BeautifulSoup:
+def get_html_body(soup: BeautifulSoup) -> BeautifulSoup:
     return soup.find('body')

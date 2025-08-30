@@ -58,7 +58,7 @@ def split_on_newlines(document: RichTextDocument) -> None:
     document.texts = new_texts
 
 
-def normalisation_pipeline(**kwargs) -> list[Callable[[RichTextDocument], None]]:
+def normalisation_pipeline() -> list[Callable[[RichTextDocument], None]]:
     pipeline: list[Callable[[RichTextDocument], None]] = [
         strip_whitespace,
         remove_empty,

@@ -1,6 +1,6 @@
-from .get import PipelineData, get_pipeline_data
+from .get import Metadata, PipelineData, get_pipeline_data
 
 __all__ = [
-    'PipelineData',
+    'Metadata', 'PipelineData',
     'get_pipeline_data'
 ]

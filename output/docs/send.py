@@ -8,6 +8,7 @@ from typing import Any
 from richtext import RichTextDocument
 from docrun import adapt_from_rich_text, DocRun
 from google.auth.exceptions import RefreshError
+from input import Metadata
 
 
 @dataclass
@@ -209,7 +210,7 @@ def build_requests(runs: list[DocRun]) -> list[dict]:
     return text_request + setup_styles + style_requests + paragraph_requests
 
 
-def to_docs(document: RichTextDocument, metadata: dict | None = None, **kwargs) -> None:
+def to_docs(document: RichTextDocument, metadata: Metadata) -> None:
     title: str = metadata['title']
     publication: str = metadata['publication']
     date: str = metadata['date']

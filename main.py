@@ -1,12 +1,23 @@
-from pipe import pipeline
+from pipeline import pipeline
 from plugin import load_plugins
 
 
 def main() -> None:
-    url: str = 'https://www.marxists.org/archive/connolly/1908/06/harpb.htm'
+    urls: list[str] = [
+        'https://www.marxists.org/archive/connolly/1908/06/harpb.htm',
+        'https://www.marxists.org/archive/connolly/1908/07/polact.htm',
+        'https://www.marxists.org/archive/connolly/1908/08/davitt.htm',
+        'https://www.marxists.org/archive/connolly/1908/09/irmasses.htm',
+        'https://www.marxists.org/archive/connolly/1908/09/cathsoc.htm'
+    ]
+
     plugins: dict = load_plugins()
 
-    pipeline(url, plugins=plugins, transform='marxists.org', output='idml')
+    for url in urls:
+        try:
+            pipeline(url, plugins=plugins, output='docx')
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':
@@ -16,7 +27,7 @@ if __name__ == '__main__':
     TODO:
     
         MISC
-            i.      pull metadata from source -> remove unwanted elements from source -> in that order
+            i.      pull the curvy quotes out of output/idml/send.py and put in normalise?
             ii.     anchors for detected spelling errors     
             iii.    anchors to indicate more formatting options (future)
             iv.     textacy might be able to improve text processing pipeline instead of custom functions

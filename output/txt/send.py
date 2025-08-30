@@ -1,5 +1,7 @@
 from richtext import RichTextDocument
 from anchors import remove_anchors
+from pathlib import Path
+from input import Metadata
 
 
 def build_text(document: RichTextDocument) -> str:
@@ -12,13 +14,16 @@ def build_text(document: RichTextDocument) -> str:
     return '\n'.join(stripped_text)
 
 
-def to_txt(document: RichTextDocument, metadata: dict | None = None, **kwargs) -> None:
+def to_txt(document: RichTextDocument, metadata: Metadata) -> None:
     title: str = metadata['title']
     publication: str = metadata['publication']
     date: str = metadata['date']
 
     text: str = build_text(document)
-    fn: str = f'{title}.txt'
+
+    directory = Path('export')
+    fn = Path(directory, f'{title}.txt')
+    directory.mkdir(exist_ok=True)
 
     with open(fn, 'w') as file:
         file.write(text)

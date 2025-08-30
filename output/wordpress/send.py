@@ -5,6 +5,7 @@ from .build import build_html_from_document
 import json
 from string import punctuation
 from richtext import RichTextDocument
+from input import Metadata
 
 
 def send_post_to_wordpress(url: str, data: dict, auth: HTTPBasicAuth) -> int:
@@ -55,7 +56,7 @@ def get_auth_data() -> HTTPBasicAuth:
     return HTTPBasicAuth(name, pw)
 
 
-def to_wordpress(document: RichTextDocument, metadata: dict | None = None, **kwargs) -> None:
+def to_wordpress(document: RichTextDocument, metadata: Metadata) -> None:
     title: str = metadata['title']
     publication: str = metadata['publication']
     date: str = metadata['date']
