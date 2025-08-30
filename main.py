@@ -15,7 +15,7 @@ def main() -> None:
 
     for url in urls:
         try:
-            pipeline(url, plugins=plugins, output='docx')
+            pipeline(url, plugins=plugins, output='indesign')
         except Exception as e:
             print(e)
 
@@ -27,10 +27,9 @@ if __name__ == '__main__':
     TODO:
     
         MISC
-            i.      pull the curvy quotes out of output/idml/send.py and put in normalise?
-            ii.     anchors for detected spelling errors     
-            iii.    anchors to indicate more formatting options (future)
-            iv.     textacy might be able to improve text processing pipeline instead of custom functions
+            i.     textacy might be able to improve text processing pipeline instead of custom functions
+            ii.    anchors for detected spelling errors     
+            iii.   anchors to indicate more formatting options (future)
         
         CLI
             i.      look at the command line arguments API again

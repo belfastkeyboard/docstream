@@ -121,31 +121,6 @@ def get_paragraph_style(styles: set[str]) -> dict[str, str]:
     return {'AppliedParagraphStyle': 'ParagraphStyle/Body Text'}
 
 
-def handle_quotes(text: str) -> str:
-    # Leading apostrophe contractions e.g. ['tis] -> [’tis]
-    text = re.sub(r"(?<![a-zA-Z])'(?=" + '|'.join(['tis', 'twas', 'twere', 'em', 'cause']) + r")", '’', text)
-
-    # Contractions and singular possessives e.g [isn't] -> [isn’t]
-    text = re.sub(r"(?<=\w)'(?=\w)", "’", text)
-
-    # Apostrophes before numbers ['98] -> [’98]
-    text = re.sub(r"'(?=\d)", "’", text)
-
-    # Opening single quotes e.g. ['quote] -> [‘quote]
-    text = re.sub(r"(^|[\s(\[{])'(?=\w)", r"\1‘", text)
-
-    # Closing single quotes and plural possessives e.g. [plurals'] -> [plurals’]
-    text = text.replace("'", "’")
-
-    # Opening double quotes e.g. ["quote] -> [“quote]
-    text = re.sub(r'(^|[\s(\[{])"(?=\S)', r'\1“', text)
-
-    # Closing double quotes e.g. [quote"] -> [quote”]
-    text = text.replace('"', '”')
-
-    return text
-
-
 def write_run(paragraph, text: str, **kwargs) -> None:
     char_style = SubElement(paragraph,
                             "CharacterStyleRange",
@@ -153,10 +128,6 @@ def write_run(paragraph, text: str, **kwargs) -> None:
                             **kwargs)
 
     content = SubElement(char_style, 'Content')
-
-    if '"' in text or "'" in text:
-        text = handle_quotes(text)
-
     content.text = text
 
 
@@ -224,7 +195,7 @@ def to_idml(document: RichTextDocument, metadata: Metadata) -> None:
     publication: str = metadata.get('publication', '')
     date: str = metadata.get('date', '')
 
-    paragraphs: list[DocPara] = adapt_into_paragraphs_from_rich_text(document)
+    paragraphs: list[DocPara] = adapt_into_paragraphs_from_rich_text(document, curved_quotes=True)
 
     clear_body()
     write_title(title)
