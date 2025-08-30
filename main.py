@@ -23,6 +23,15 @@ def main() -> None:
 if __name__ == '__main__':
     main()
 
+
+"""
+    FIX:
+    
+        inDesign
+            i. "Unknown date format: September"
+            
+"""
+
 """
     TODO:
     
