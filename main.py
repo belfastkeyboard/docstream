@@ -14,10 +14,10 @@ def main() -> None:
     plugins: dict = load_plugins()
 
     for url in urls:
-        try:
-            pipeline(url, plugins=plugins, output='indesign')
-        except Exception as e:
-            print(e)
+        # try:
+        pipeline(url, plugins=plugins, output='indesign')
+        # except Exception as e:
+        #     print(e)
 
 
 if __name__ == '__main__':

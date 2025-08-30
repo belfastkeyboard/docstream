@@ -21,7 +21,7 @@ def ordinal(day: int):
 
 
 def try_get_date(date: str) -> Date:
-    for fmt in ('%B %Y', '%Y-%m-%d', '%d %B %Y'):
+    for fmt in {'%B %Y', '%B, %Y', '%Y-%m-%d', '%d %B %Y'}:
         try:
             dt = datetime.strptime(date, fmt)
 

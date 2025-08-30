@@ -77,20 +77,15 @@ def adaptor(content: Any, plugins: dict or None = None) -> RichTextDocument:
     return doc
 
 
-def get_metadata_generic(metadata: dict[str, str]) -> None:
-    metadata['title'] = ''
-    metadata['publication'] = ''
-    metadata['date'] = ''
-
-
 def get_metadata(content: Any, plugins: dict | None = None) -> dict[str, str]:
-    metadata: dict[str, str] = {}
+    metadata: dict[str, str] = {
+        'title': '',
+        'publication': '',
+        'date': ''
+    }
 
-    if not plugins or not plugins.get('metadata'):
-        get_metadata_generic(metadata)
-    else:
-        for get_meta in plugins.get('metadata'):
-            get_meta(content, metadata)
+    for get_meta in plugins.get('metadata'):
+        get_meta(content, metadata)
 
     return metadata
 
