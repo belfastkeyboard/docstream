@@ -14,31 +14,27 @@ def main() -> None:
     plugins: dict = load_plugins()
 
     for url in urls:
-        # try:
-        pipeline(url, plugins=plugins, output='indesign')
-        # except Exception as e:
-        #     print(e)
+        try:
+            pipeline(url, plugins=plugins, output='indesign')
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':
     main()
 
-
-"""
-    FIX:
-    
-        inDesign
-            i. "Unknown date format: September"
-            
-"""
-
 """
     TODO:
     
+        TEST
+            i.      test current setup on docs and wordpress
+            ii.     test on one url
+            iii.    test on all five urls
+    
         MISC
-            i.     textacy might be able to improve text processing pipeline instead of custom functions
-            ii.    anchors for detected spelling errors     
-            iii.   anchors to indicate more formatting options (future)
+            i.      textacy might be able to improve text processing pipeline instead of custom functions
+            ii.     anchors for detected spelling errors     
+            iii.    anchors to indicate more formatting options (future)
         
         CLI
             i.      look at the command line arguments API again
