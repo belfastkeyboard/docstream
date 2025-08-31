@@ -1,5 +1,6 @@
 from pipeline import pipeline
 from plugin import load_plugins
+import traceback
 
 
 def main() -> None:
@@ -16,8 +17,8 @@ def main() -> None:
     for url in urls:
         try:
             pipeline(url, plugins=plugins, output='wordpress')
-        except Exception as e:
-            print(f'{type(e).__name__}: [{e}]')
+        except Exception:
+            traceback.print_exc()
 
 
 if __name__ == '__main__':
